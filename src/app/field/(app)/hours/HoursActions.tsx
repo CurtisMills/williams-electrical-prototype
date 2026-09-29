@@ -1,8 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { BigButton } from "@/components/field/BigButton";
-import { Notice } from "@/components/field/ui";
+import { PencilLine, Send } from "lucide-react";
+import { Button } from "@/components/portal/button";
+import { Dialog } from "@/components/portal/Dialog";
+import { CheckboxField, SelectField, TextField } from "@/components/portal/field";
+import { FeedbackRegion } from "@/components/portal/notice";
 import { useAction } from "@/components/useAction";
 
 type Job = { id: string; ref: string; title: string; site: string };
@@ -21,33 +24,43 @@ export interface CorrectionInitial {
 export function SubmitWeek({ weekStart, blocked }: { weekStart: string; blocked: boolean }) {
   const { run, busy, error, message } = useAction();
   return (
-    <>
-      <BigButton tone="white" busy={busy} disabled={blocked} onClick={() => run("/api/field/timesheet", { weekStart }, { success: "Week submitted to the office." })}>
-        Submit this week
-      </BigButton>
-      {error && <div className="mt-2"><Notice tone="error">{error}</Notice></div>}
-      {message && <div className="mt-2"><Notice tone="success">{message}</Notice></div>}
-    </>
+    <div className="space-y-3">
+      <Button
+        variant="primary"
+        size="lg"
+        full
+        busy={busy}
+        busyLabel="Sending…"
+        disabled={blocked}
+        onClick={() => run("/api/field/timesheet", { weekStart }, { success: "Week sent to the office for approval." })}
+        icon={<Send className="size-5" aria-hidden />}
+      >
+        Send this week to the office
+      </Button>
+      {blocked && <p className="text-label text-muted">Add the missing finish time first.</p>}
+      <FeedbackRegion error={error} message={message} />
+    </div>
   );
 }
 
-export function CorrectionButton({ jobs, initial }: { jobs: Job[]; initial: CorrectionInitial }) {
+export function CorrectionButton({ jobs, initial, label }: { jobs: Job[]; initial: CorrectionInitial; label: string }) {
   const [open, setOpen] = useState(false);
-  if (!open) {
-    return (
-      <button type="button" onClick={() => setOpen(true)} className="min-h-10 rounded-lg px-2 text-xs font-extrabold text-signal-700 hover:bg-ink-50">
-        Fix
-      </button>
-    );
-  }
   return (
-    <div className="fixed inset-0 z-40 flex items-end justify-center bg-ink-950/50 sm:items-center" role="dialog" aria-modal="true" aria-label="Ask for a correction">
-      <div className="max-h-[90dvh] w-full max-w-lg overflow-y-auto rounded-t-2xl bg-white p-4 sm:rounded-2xl">
-        <h2 className="mb-1 text-lg font-extrabold">Ask the office to correct this</h2>
-        <p className="mb-3 text-sm text-ink-500">Change what’s wrong. The office sees the original and your change.</p>
-        <CorrectionForm jobs={jobs} initial={initial} onDone={() => setOpen(false)} onCancel={() => setOpen(false)} />
-      </div>
-    </div>
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="inline-flex min-h-12 items-center gap-1.5 rounded-control px-2 text-label font-bold text-primary hover:bg-primary-soft"
+      >
+        <PencilLine className="size-4" aria-hidden />
+        Correct <span className="sr-only">{label}</span>
+      </button>
+      {open && (
+        <Dialog title="Ask for a correction" description="Change what’s wrong. The office sees the original and your change before it’s applied." onClose={() => setOpen(false)}>
+          <CorrectionForm jobs={jobs} initial={initial} onDone={() => setOpen(false)} onCancel={() => setOpen(false)} />
+        </Dialog>
+      )}
+    </>
   );
 }
 
@@ -71,13 +84,27 @@ export function CorrectionForm({
   const [target, setTarget] = useState(initial.activity && initial.activity !== "job" ? initial.activity : (initial.jobId ?? ""));
   const [note, setNote] = useState("");
   const [reason, setReason] = useState("");
+  const [tried, setTried] = useState(false);
   const isActivity = ["travel", "other", "unassigned"].includes(target);
+
+  const errors = {
+    date: !date ? "Choose the date." : null,
+    start: !start ? "Enter a start time." : null,
+    finish: !finish ? "Enter a finish time." : null,
+    target: !target ? "Choose the job or type of work." : null,
+    note: target === "unassigned" && note.trim().length < 3 ? "Say where you were and what the work was." : null,
+    reason: reason.trim().length < 5 ? "Tell the office what happened (at least 5 characters)." : null,
+  };
+  const show = (k: keyof typeof errors) => (tried ? errors[k] : null);
 
   return (
     <form
-      className="grid grid-cols-2 gap-3 rounded-xl border border-ink-100 bg-white p-3"
+      noValidate
+      className="grid grid-cols-1 gap-4 min-[380px]:grid-cols-2"
       onSubmit={async (e) => {
         e.preventDefault();
+        setTried(true);
+        if (Object.values(errors).some(Boolean)) return;
         const ok = await run(
           "/api/field/corrections",
           {
@@ -96,74 +123,51 @@ export function CorrectionForm({
         );
         if (ok) {
           setReason("");
+          setTried(false);
           onDone?.();
         }
       }}
     >
-      <label className="col-span-2 text-sm font-bold">
-        Date
-        <input type="date" required value={date} onChange={(e) => setDate(e.target.value)} className="mt-1 min-h-12 w-full rounded-lg border border-ink-200 px-2 text-base" />
-      </label>
-      <label className="text-sm font-bold">
-        Start
-        <input type="time" required value={start} onChange={(e) => setStart(e.target.value)} className="mt-1 min-h-12 w-full rounded-lg border border-ink-200 px-2 text-base" />
-      </label>
-      <label className="text-sm font-bold">
-        Finish
-        <input type="time" required value={finish} onChange={(e) => setFinish(e.target.value)} className="mt-1 min-h-12 w-full rounded-lg border border-ink-200 px-2 text-base" />
-      </label>
-      <label className="flex min-h-11 items-center gap-2 text-sm font-semibold">
-        <input type="checkbox" checked={nextDay} onChange={(e) => setNextDay(e.target.checked)} className="h-5 w-5" />
-        Finished after midnight
-      </label>
-      <label className="text-sm font-bold">
-        Break (minutes)
-        <input type="number" min={0} inputMode="numeric" value={brk} onChange={(e) => setBrk(e.target.value)} className="mt-1 min-h-12 w-full rounded-lg border border-ink-200 px-2 text-base" />
-      </label>
-      <label className="col-span-2 text-sm font-bold">
-        Job
-        <select required value={target} onChange={(e) => setTarget(e.target.value)} className="mt-1 min-h-12 w-full rounded-lg border border-ink-200 bg-white px-2 text-base">
-          <option value="" disabled>
-            Choose…
+      <TextField className="min-[380px]:col-span-2" label="Date" type="date" required value={date} onChange={(e) => setDate(e.target.value)} error={show("date")} />
+      <TextField label="Start" type="time" required value={start} onChange={(e) => setStart(e.target.value)} error={show("start")} />
+      <TextField label="Finish" type="time" required value={finish} onChange={(e) => setFinish(e.target.value)} error={show("finish")} />
+      <TextField label="Break (minutes)" type="number" min={0} inputMode="numeric" value={brk} onChange={(e) => setBrk(e.target.value)} />
+      <CheckboxField className="self-end" label="Finished after midnight" checked={nextDay} onChange={(e) => setNextDay(e.target.checked)} />
+      <SelectField className="min-[380px]:col-span-2" label="Job" required value={target} onChange={(e) => setTarget(e.target.value)} error={show("target")}>
+        <option value="" disabled>
+          Choose…
+        </option>
+        {jobs.map((j) => (
+          <option key={j.id} value={j.id}>
+            {j.ref} · {j.title} ({j.site})
           </option>
-          {jobs.map((j) => (
-            <option key={j.id} value={j.id}>
-              {j.ref} · {j.title} ({j.site})
-            </option>
-          ))}
-          <option value="travel">Travel</option>
-          <option value="other">Other work (yard, stores, training)</option>
-          <option value="unassigned">Job not listed</option>
-        </select>
-      </label>
+        ))}
+        <option value="travel">Travel</option>
+        <option value="other">Other work (yard, stores, training)</option>
+        <option value="unassigned">Job not listed</option>
+      </SelectField>
       {target === "unassigned" && (
-        <label className="col-span-2 text-sm font-bold">
-          Where and what was the work?
-          <input required minLength={3} value={note} onChange={(e) => setNote(e.target.value)} className="mt-1 min-h-12 w-full rounded-lg border border-ink-200 px-2 text-base" />
-        </label>
+        <TextField className="min-[380px]:col-span-2" label="Where and what was the work?" required value={note} onChange={(e) => setNote(e.target.value)} error={show("note")} />
       )}
-      <label className="col-span-2 text-sm font-bold">
-        What happened?
-        <input
-          required
-          minLength={5}
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-          placeholder="e.g. Forgot to press Start when I arrived"
-          className="mt-1 min-h-12 w-full rounded-lg border border-ink-200 px-2 text-base"
-        />
-      </label>
-      {error && <div className="col-span-2"><Notice tone="error">{error}</Notice></div>}
-      {message && <div className="col-span-2"><Notice tone="success">{message}</Notice></div>}
-      <div className={`col-span-2 grid gap-2 ${onCancel ? "grid-cols-2" : ""}`}>
+      <TextField
+        className="min-[380px]:col-span-2"
+        label="What happened?"
+        hint="For example: forgot to press Start when I arrived"
+        required
+        value={reason}
+        onChange={(e) => setReason(e.target.value)}
+        error={show("reason")}
+      />
+      <FeedbackRegion className="min-[380px]:col-span-2" error={error} message={message} />
+      <div className={`grid gap-2 min-[380px]:col-span-2 ${onCancel ? "min-[380px]:grid-cols-2" : ""}`}>
         {onCancel && (
-          <BigButton tone="outline" onClick={onCancel}>
+          <Button variant="secondary" size="lg" onClick={onCancel}>
             Cancel
-          </BigButton>
+          </Button>
         )}
-        <BigButton tone="primary" type="submit" busy={busy}>
-          Send to office
-        </BigButton>
+        <Button variant="primary" size="lg" type="submit" busy={busy} busyLabel="Sending…">
+          Send to the office
+        </Button>
       </div>
     </form>
   );

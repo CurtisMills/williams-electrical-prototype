@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { Notice } from "@/components/field/ui";
+import { Button } from "@/components/portal/button";
+import { FieldError } from "@/components/portal/field";
 import { btn, inputCls, labelCls } from "@/components/office/kit";
 import { useAction } from "@/components/useAction";
 
@@ -33,33 +35,32 @@ export function JobStatusControl({ jobId, status }: { jobId: string; status: str
   if (reopening) {
     return (
       <form
-        className="flex flex-col gap-1"
+        className="flex max-w-xs flex-col gap-2"
         onSubmit={async (e) => {
           e.preventDefault();
           if (await run("/api/office/jobs", { action: "status", jobId, status: reopening, reason })) setReopening(null);
         }}
       >
-        <input required minLength={5} value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Reason for reopening" className={`${inputCls} min-h-8 text-xs`} />
-        <span className="flex gap-1">
-          <button type="submit" disabled={busy} className="rounded bg-ink-900 px-2 py-1 text-xs font-bold text-white">
+        <input required minLength={5} value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Reason for reopening" aria-label="Reason for reopening" className={inputCls} />
+        <span className="flex gap-2">
+          <Button type="submit" size="md" busy={busy}>
             Reopen
-          </button>
-          <button type="button" onClick={() => setReopening(null)} className="px-2 py-1 text-xs font-bold">
+          </Button>
+          <Button variant="quiet" onClick={() => setReopening(null)}>
             Cancel
-          </button>
+          </Button>
         </span>
-        {error && <span className="text-xs font-bold text-signal-700">{error}</span>}
+        <span role="alert">{error && <FieldError>{error}</FieldError>}</span>
       </form>
     );
   }
   return (
-    <span className="flex flex-wrap gap-1">
+    <span className="flex flex-wrap gap-2">
       {NEXT[status].map((n) => (
-        <button
+        <Button
           key={n.to}
-          type="button"
-          disabled={busy}
-          className="rounded border border-ink-200 px-2 py-1 text-xs font-bold hover:border-ink-400 disabled:opacity-50"
+          variant="secondary"
+          size="sm"          busy={busy}
           onClick={() => {
             if (needsReason) return setReopening(n.to);
             if (n.to === "cancelled" && !window.confirm("Cancel this job? Nobody will be able to record time against it.")) return;
@@ -67,9 +68,9 @@ export function JobStatusControl({ jobId, status }: { jobId: string; status: str
           }}
         >
           {n.label}
-        </button>
+        </Button>
       ))}
-      {error && <span className="text-xs font-bold text-signal-700">{error}</span>}
+      <span role="alert">{error && <FieldError>{error}</FieldError>}</span>
     </span>
   );
 }
@@ -86,7 +87,7 @@ export function JobForm({ customers, sites }: { customers: Customer[]; sites: Si
   const [plannedHours, setPlannedHours] = useState("");
   return (
     <form
-      className="grid grid-cols-2 gap-3"
+      className="grid gap-4 sm:grid-cols-2"
       onSubmit={async (e) => {
         e.preventDefault();
         const job = await run<{ ref: string; id: string }>(
@@ -99,7 +100,7 @@ export function JobForm({ customers, sites }: { customers: Customer[]; sites: Si
     >
       <label className={labelCls}>
         Customer
-        <select required value={customerId} onChange={(e) => { setCustomerId(e.target.value); setSiteId(""); }} className={`${inputCls} mt-1`}>
+        <select required value={customerId} onChange={(e) => { setCustomerId(e.target.value); setSiteId(""); }} className={inputCls}>
           <option value="" disabled>
             Choose…
           </option>
@@ -112,7 +113,7 @@ export function JobForm({ customers, sites }: { customers: Customer[]; sites: Si
       </label>
       <label className={labelCls}>
         Site
-        <select required value={siteId} onChange={(e) => setSiteId(e.target.value)} className={`${inputCls} mt-1`} disabled={!customerId}>
+        <select required value={siteId} onChange={(e) => setSiteId(e.target.value)} className={inputCls} disabled={!customerId}>
           <option value="" disabled>
             Choose…
           </option>
@@ -123,40 +124,40 @@ export function JobForm({ customers, sites }: { customers: Customer[]; sites: Si
           ))}
         </select>
       </label>
-      <label className={`${labelCls} col-span-2`}>
+      <label className={`${labelCls} sm:col-span-2`}>
         Title
-        <input required minLength={3} value={title} onChange={(e) => setTitle(e.target.value)} className={`${inputCls} mt-1`} placeholder="e.g. Kitchen rewire" />
+        <input required minLength={3} value={title} onChange={(e) => setTitle(e.target.value)} className={inputCls} placeholder="e.g. Kitchen rewire" />
       </label>
       <label className={labelCls}>
         Type
-        <input value={type} onChange={(e) => setType(e.target.value)} className={`${inputCls} mt-1`} />
+        <input value={type} onChange={(e) => setType(e.target.value)} className={inputCls} />
       </label>
       <label className={labelCls}>
         Status
-        <select value={status} onChange={(e) => setStatus(e.target.value)} className={`${inputCls} mt-1`}>
+        <select value={status} onChange={(e) => setStatus(e.target.value)} className={inputCls}>
           <option value="confirmed">Confirmed</option>
           <option value="tentative">Tentative (quote stage)</option>
         </select>
       </label>
       <label className={labelCls}>
         Start
-        <input type="date" required value={startDate} onChange={(e) => setStartDate(e.target.value)} className={`${inputCls} mt-1`} />
+        <input type="date" required value={startDate} onChange={(e) => setStartDate(e.target.value)} className={inputCls} />
       </label>
       <label className={labelCls}>
         End
-        <input type="date" required value={endDate} min={startDate} onChange={(e) => setEndDate(e.target.value)} className={`${inputCls} mt-1`} />
+        <input type="date" required value={endDate} min={startDate} onChange={(e) => setEndDate(e.target.value)} className={inputCls} />
       </label>
       <label className={labelCls}>
         Planned hours
-        <input type="number" min={0} value={plannedHours} onChange={(e) => setPlannedHours(e.target.value)} className={`${inputCls} mt-1`} />
+        <input type="number" min={0} value={plannedHours} onChange={(e) => setPlannedHours(e.target.value)} className={inputCls} />
       </label>
       <div className="flex items-end">
         <button type="submit" disabled={busy} className={`${btn.dark} w-full`}>
           Create job
         </button>
       </div>
-      {error && <div className="col-span-2"><Notice tone="error">{error}</Notice></div>}
-      {message && <div className="col-span-2"><Notice tone="success">{message}</Notice></div>}
+      {error && <div className="sm:col-span-2"><Notice tone="error">{error}</Notice></div>}
+      {message && <div className="sm:col-span-2"><Notice tone="success">{message}</Notice></div>}
     </form>
   );
 }
@@ -172,7 +173,7 @@ export function SiteForm({ customers }: { customers: Customer[] }) {
   const [access, setAccess] = useState("");
   return (
     <form
-      className="grid grid-cols-2 gap-3"
+      className="grid gap-4 sm:grid-cols-2"
       onSubmit={async (e) => {
         e.preventDefault();
         const ok = await run("/api/office/jobs", { action: "site", customerId, customerName, name, address, contactName, contactPhone, access }, { success: "Site added." });
@@ -185,7 +186,7 @@ export function SiteForm({ customers }: { customers: Customer[] }) {
     >
       <label className={labelCls}>
         Customer
-        <select required value={customerId} onChange={(e) => setCustomerId(e.target.value)} className={`${inputCls} mt-1`}>
+        <select required value={customerId} onChange={(e) => setCustomerId(e.target.value)} className={inputCls}>
           <option value="" disabled>
             Choose…
           </option>
@@ -200,38 +201,38 @@ export function SiteForm({ customers }: { customers: Customer[] }) {
       {customerId === "new" ? (
         <label className={labelCls}>
           New customer name
-          <input required value={customerName} onChange={(e) => setCustomerName(e.target.value)} className={`${inputCls} mt-1`} />
+          <input required value={customerName} onChange={(e) => setCustomerName(e.target.value)} className={inputCls} />
         </label>
       ) : (
         <span />
       )}
       <label className={labelCls}>
         Site name
-        <input required value={name} onChange={(e) => setName(e.target.value)} className={`${inputCls} mt-1`} />
+        <input required value={name} onChange={(e) => setName(e.target.value)} className={inputCls} />
       </label>
       <label className={labelCls}>
         Address and postcode
-        <input required value={address} onChange={(e) => setAddress(e.target.value)} className={`${inputCls} mt-1`} />
+        <input required value={address} onChange={(e) => setAddress(e.target.value)} className={inputCls} />
       </label>
       <label className={labelCls}>
         Site contact
-        <input value={contactName} onChange={(e) => setContactName(e.target.value)} className={`${inputCls} mt-1`} />
+        <input value={contactName} onChange={(e) => setContactName(e.target.value)} className={inputCls} />
       </label>
       <label className={labelCls}>
         Contact phone
-        <input value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} className={`${inputCls} mt-1`} />
+        <input value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} className={inputCls} />
       </label>
-      <label className={`${labelCls} col-span-2`}>
+      <label className={`${labelCls} sm:col-span-2`}>
         Access instructions
-        <textarea rows={2} value={access} onChange={(e) => setAccess(e.target.value)} className={`${inputCls} mt-1 py-2`} placeholder="Key safe code, parking, sign-in, PPE…" />
+        <textarea rows={2} value={access} onChange={(e) => setAccess(e.target.value)} className={`${inputCls} py-2`} placeholder="Key safe code, parking, sign-in, PPE…" />
       </label>
-      <div className="col-span-2">
+      <div className="sm:col-span-2">
         <button type="submit" disabled={busy} className={btn.dark}>
           Add site
         </button>
       </div>
-      {error && <div className="col-span-2"><Notice tone="error">{error}</Notice></div>}
-      {message && <div className="col-span-2"><Notice tone="success">{message}</Notice></div>}
+      {error && <div className="sm:col-span-2"><Notice tone="error">{error}</Notice></div>}
+      {message && <div className="sm:col-span-2"><Notice tone="success">{message}</Notice></div>}
     </form>
   );
 }

@@ -47,25 +47,25 @@ export default async function TimesheetsPage(props: PageProps<"/office/timesheet
 
   return (
     <>
-      <PageHeader overline="OFFICE" title="Timesheets">
+      <PageHeader overline="Office" title="Timesheets">
         Built from recorded sessions, Monday to Sunday. Approve each person’s week before exporting final figures. A later correction reopens an approved week automatically.
       </PageHeader>
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
-        <div className="flex items-center rounded-lg border border-ink-200 bg-white">
-          <Link href={qs({ week: addDays(week, -7) })} className="grid h-10 w-10 place-items-center" aria-label="Previous week">
-            <ChevronLeft className="h-4 w-4" />
+        <div className="flex items-center rounded-control border border-line bg-surface">
+          <Link href={qs({ week: addDays(week, -7) })} className="grid size-12 place-items-center" aria-label="Previous week">
+            <ChevronLeft className="size-5" aria-hidden />
           </Link>
           <span className="px-2 text-sm font-bold">{formatDateRange(week, addDays(week, 6))}</span>
-          <Link href={qs({ week: addDays(week, 7) })} className="grid h-10 w-10 place-items-center" aria-label="Next week">
-            <ChevronRight className="h-4 w-4" />
+          <Link href={qs({ week: addDays(week, 7) })} className="grid size-12 place-items-center" aria-label="Next week">
+            <ChevronRight className="size-5" aria-hidden />
           </Link>
         </div>
-        <div className="flex rounded-lg border border-ink-200 bg-white p-0.5">
-          <Link href={qs({ by: "employee" })} className={`rounded-md px-3 py-1.5 text-sm font-bold ${by === "employee" ? "bg-ink-900 text-white" : ""}`}>
+        <div className="flex rounded-control border border-line bg-surface p-0.5">
+          <Link href={qs({ by: "employee" })} aria-current={by === "employee" ? "page" : undefined} className={`inline-flex min-h-11 items-center rounded-md px-4 text-label font-bold ${by === "employee" ? "bg-ink text-white" : ""}`}>
             By employee
           </Link>
-          <Link href={qs({ by: "customer" })} className={`rounded-md px-3 py-1.5 text-sm font-bold ${by === "customer" ? "bg-ink-900 text-white" : ""}`}>
+          <Link href={qs({ by: "customer" })} aria-current={by === "customer" ? "page" : undefined} className={`inline-flex min-h-11 items-center rounded-md px-4 text-label font-bold ${by === "customer" ? "bg-ink text-white" : ""}`}>
             By customer and job
           </Link>
         </div>
@@ -75,7 +75,7 @@ export default async function TimesheetsPage(props: PageProps<"/office/timesheet
         </Link>
       </div>
 
-      <form method="get" className="mb-5 grid gap-3 rounded-2xl border border-ink-100 bg-white p-4 sm:grid-cols-4">
+      <form method="get" className="mb-5 grid gap-3 rounded-card border border-line bg-surface p-4 sm:grid-cols-4">
         <input type="hidden" name="week" value={week} />
         <input type="hidden" name="by" value={by} />
         <label className={labelCls}>
@@ -123,55 +123,56 @@ export default async function TimesheetsPage(props: PageProps<"/office/timesheet
 
       {by === "employee" ? (
         <Card title="Weekly timesheets" aside={`${formatDuration(all.totalMinutes)} recorded · ${formatDuration(approvedOnly.totalMinutes)} approved`}>
-          <div className="-mx-5 -my-5 overflow-x-auto">
+          <div className="-mx-5 -my-5 relative overflow-x-auto">
             <table className="w-full min-w-[900px] text-sm">
-              <thead className="border-b border-ink-100 bg-ink-50/60">
+              <thead className="border-b border-line bg-subtle">
                 <tr>
                   <th className={th}>Employee</th>
                   <th className={th}>Status</th>
                   <th className={th}>Recorded{filters.customerId || filters.jobId || filters.siteId ? " (filtered)" : ""}</th>
                   <th className={th}>Jobs / other</th>
-                  <th className={th}>Leave</th>
+                  <th className={th}>Holiday</th>
                   <th className={th}>Previous week</th>
                   <th className={th}>Issues</th>
                   <th className={th}></th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-ink-50">
+              <tbody className="divide-y divide-line">
                 {summaries.map(({ employee, s }) => {
                   const filtered = all.byEmployee.get(employee.id)?.minutes ?? 0;
                   const diff = s.totalMinutes - s.previousWeekMinutes;
                   return (
-                    <tr key={employee.id} className={s.sheet.status === "submitted" ? "bg-sky-50/50" : undefined}>
+                    <tr key={employee.id} className={s.sheet.status === "submitted" ? "bg-info-surface" : undefined}>
                       <td className={td}>
                         <span className="font-bold">{employee.name}</span>
-                        <span className="block text-xs text-ink-500">{roleLabel[employee.role]}</span>
+                        <span className="block text-xs text-muted">{roleLabel[employee.role]}</span>
                       </td>
                       <td className={td}>
                         <TimesheetPill status={s.sheet.status} />
-                        {s.sheet.revision > 1 && <span className="block text-xs text-ink-500">Revision {s.sheet.revision}</span>}
+                        {s.sheet.revision > 1 && <span className="block text-xs text-muted">Revision {s.sheet.revision}</span>}
                       </td>
-                      <td className={`${td} font-mono font-bold`}>{formatDuration(filters.customerId || filters.jobId || filters.siteId ? filtered : s.totalMinutes)}</td>
-                      <td className={`${td} font-mono`}>
+                      <td className={`${td} tabular-nums font-bold`}>{formatDuration(filters.customerId || filters.jobId || filters.siteId ? filtered : s.totalMinutes)}</td>
+                      <td className={`${td} tabular-nums`}>
                         {formatDuration(s.jobMinutes)} / {formatDuration(s.otherMinutes)}
                       </td>
                       <td className={td}>{s.leaveDays ? `${s.leaveDays} day${s.leaveDays === 1 ? "" : "s"}` : "–"}</td>
-                      <td className={`${td} font-mono`}>
+                      <td className={`${td} tabular-nums`}>
                         {formatDuration(s.previousWeekMinutes)}
                         {s.previousWeekMinutes > 0 && Math.abs(diff) >= 240 && (
-                          <span className={`block text-xs font-bold ${diff > 0 ? "text-amber-800" : "text-sky-800"}`}>
+                          <span className={`block text-xs font-bold ${diff > 0 ? "text-warning" : "text-info"}`}>
                             {diff > 0 ? "+" : "−"}
                             {formatDuration(Math.abs(diff))}
                           </span>
                         )}
                       </td>
                       <td className={td}>
-                        {s.openSessions.length > 0 && <Pill tone="red">Open record</Pill>}
-                        {s.sheet.returnReason && s.sheet.status === "changes_requested" && <span className="block text-xs text-amber-800">{s.sheet.returnReason}</span>}
+                        {s.openSessions.length > 0 && <Pill tone="amber">No finish recorded</Pill>}
+                        {s.sheet.returnReason && s.sheet.status === "changes_requested" && <span className="block text-xs text-warning">{s.sheet.returnReason}</span>}
                       </td>
                       <td className={td}>
-                        <Link href={`/office/timesheets/${employee.id}?week=${week}`} className="font-extrabold text-signal-700 hover:underline">
-                          {s.sheet.status === "submitted" ? "Review" : "Open"}
+                        <Link href={`/office/timesheets/${employee.id}?week=${week}`} className="-my-3 inline-flex min-h-12 items-center font-bold text-primary hover:underline">
+                          {s.sheet.status === "submitted" ? "Review timesheet" : "View"}
+                          <span className="sr-only"> for {employee.name}</span>
                         </Link>
                       </td>
                     </tr>
@@ -183,9 +184,9 @@ export default async function TimesheetsPage(props: PageProps<"/office/timesheet
         </Card>
       ) : (
         <Card title="Hours by customer and job" aside={`${formatDuration(all.totalMinutes)} recorded · ${formatDuration(approvedOnly.totalMinutes)} approved`}>
-          <div className="-mx-5 -my-5 overflow-x-auto">
+          <div className="-mx-5 -my-5 relative overflow-x-auto">
             <table className="w-full min-w-[820px] text-sm">
-              <thead className="border-b border-ink-100 bg-ink-50/60">
+              <thead className="border-b border-line bg-subtle">
                 <tr>
                   <th className={th}>Customer</th>
                   <th className={th}>Site</th>
@@ -195,20 +196,20 @@ export default async function TimesheetsPage(props: PageProps<"/office/timesheet
                   <th className={th}>Previous week</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-ink-50">
+              <tbody className="divide-y divide-line">
                 {byJob
                   .sort((a, b) => (a.customer?.name ?? "~").localeCompare(b.customer?.name ?? "~"))
                   .map((r) => (
                     <tr key={r.key}>
-                      <td className={td}>{r.customer?.name ?? <span className="text-ink-500">Internal</span>}</td>
+                      <td className={td}>{r.customer?.name ?? <span className="text-muted">Internal</span>}</td>
                       <td className={td}>{r.site?.name ?? "–"}</td>
                       <td className={td}>{r.job ? `${r.job.ref} · ${r.job.title}` : r.key.replace(/[()]/g, "").replace(/^./, (c) => c.toUpperCase())}</td>
-                      <td className={`${td} font-mono font-bold`}>{formatDuration(r.minutes)}</td>
-                      <td className={`${td} font-mono`}>
+                      <td className={`${td} tabular-nums font-bold`}>{formatDuration(r.minutes)}</td>
+                      <td className={`${td} tabular-nums`}>
                         {formatDuration(r.approved)}
-                        {r.approved < r.minutes && <span className="block text-xs text-amber-800">{formatDuration(r.minutes - r.approved)} not yet approved</span>}
+                        {r.approved < r.minutes && <span className="block text-xs text-warning">{formatDuration(r.minutes - r.approved)} not yet approved</span>}
                       </td>
-                      <td className={`${td} font-mono`}>{formatDuration(r.previous)}</td>
+                      <td className={`${td} tabular-nums`}>{formatDuration(r.previous)}</td>
                     </tr>
                   ))}
               </tbody>
@@ -217,7 +218,7 @@ export default async function TimesheetsPage(props: PageProps<"/office/timesheet
         </Card>
       )}
       {all.open.length > 0 && (
-        <p className="mt-3 text-sm text-signal-800">
+        <p className="mt-3 text-sm text-warning">
           {all.open.length} record(s) in this week have no finish time and are left out of every total until corrected.{" "}
           <Link href="/office/exceptions?kind=missing_finish" className="font-bold underline">
             Fix them

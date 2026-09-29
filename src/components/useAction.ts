@@ -38,7 +38,7 @@ export function useAction() {
       if (options.refresh !== false) startRefresh(() => router.refresh());
       return data as T;
     } catch {
-      setError("No connection. Nothing was saved. Check your signal and try again.");
+      setError("No connection. Your entry is still here. Check your signal and try again.");
       return null;
     } finally {
       setSending(false);

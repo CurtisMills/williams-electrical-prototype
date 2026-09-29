@@ -19,11 +19,11 @@ export function SettingsForm({ longSessionHours, noStartGraceMinutes }: { longSe
     >
       <label className={labelCls}>
         Flag sessions longer than (hours)
-        <input type="number" min={6} max={16} step={0.5} value={hours} onChange={(e) => setHours(e.target.value)} className={`${inputCls} mt-1 w-40`} />
+        <input type="number" min={6} max={16} step={0.5} value={hours} onChange={(e) => setHours(e.target.value)} className={`${inputCls} w-40`} />
       </label>
       <label className={labelCls}>
         “No start recorded” after (minutes past planned start)
-        <input type="number" min={0} max={180} value={grace} onChange={(e) => setGrace(e.target.value)} className={`${inputCls} mt-1 w-40`} />
+        <input type="number" min={0} max={180} value={grace} onChange={(e) => setGrace(e.target.value)} className={`${inputCls} w-40`} />
       </label>
       <button type="submit" disabled={busy} className={btn.dark}>
         Save settings

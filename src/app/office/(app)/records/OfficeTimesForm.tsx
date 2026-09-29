@@ -51,7 +51,7 @@ export function OfficeTimesForm({
 
   return (
     <form
-      className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
+      className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
       onSubmit={async (e) => {
         e.preventDefault();
         const payload = {
@@ -78,7 +78,7 @@ export function OfficeTimesForm({
       {mode === "create" && employees && (
         <label className={labelCls}>
           Employee
-          <select required value={employeeId} onChange={(e) => setEmployeeId(e.target.value)} className={`${inputCls} mt-1`}>
+          <select required value={employeeId} onChange={(e) => setEmployeeId(e.target.value)} className={inputCls}>
             <option value="" disabled>
               Choose…
             </option>
@@ -92,26 +92,28 @@ export function OfficeTimesForm({
       )}
       <label className={labelCls}>
         Date started
-        <input type="date" required value={date} onChange={(e) => setDate(e.target.value)} className={`${inputCls} mt-1`} />
+        <input type="date" required value={date} onChange={(e) => setDate(e.target.value)} className={inputCls} />
       </label>
       <label className={labelCls}>
         Start
-        <input type="time" required value={start} onChange={(e) => setStart(e.target.value)} className={`${inputCls} mt-1`} />
+        <input type="time" required value={start} onChange={(e) => setStart(e.target.value)} className={inputCls} />
       </label>
-      <label className={labelCls}>
-        Finish
-        <input type="time" required value={finish} onChange={(e) => setFinish(e.target.value)} className={`${inputCls} mt-1`} />
-        <span className="mt-1 flex items-center gap-2 font-semibold">
-          <input type="checkbox" checked={nextDay} onChange={(e) => setNextDay(e.target.checked)} className="h-4 w-4" /> Next day (after midnight)
-        </span>
-      </label>
+      <div>
+        <label className={labelCls}>
+          Finish
+          <input type="time" required value={finish} onChange={(e) => setFinish(e.target.value)} className={inputCls} />
+        </label>
+        <label className="mt-1 flex min-h-12 items-center gap-3 text-label font-semibold">
+          <input type="checkbox" checked={nextDay} onChange={(e) => setNextDay(e.target.checked)} className="size-5 accent-primary" /> Next day (after midnight)
+        </label>
+      </div>
       <label className={labelCls}>
         Break (minutes)
-        <input type="number" min={0} value={brk} onChange={(e) => setBrk(e.target.value)} className={`${inputCls} mt-1`} />
+        <input type="number" min={0} value={brk} onChange={(e) => setBrk(e.target.value)} className={inputCls} />
       </label>
       <label className={`${labelCls} sm:col-span-2`}>
         Job or activity
-        <select required value={target} onChange={(e) => setTarget(e.target.value)} className={`${inputCls} mt-1`}>
+        <select required value={target} onChange={(e) => setTarget(e.target.value)} className={inputCls}>
           <option value="" disabled>
             Choose…
           </option>
@@ -128,7 +130,7 @@ export function OfficeTimesForm({
       {isActivity && (
         <label className={`${labelCls} sm:col-span-2`}>
           Note
-          <input value={note} onChange={(e) => setNote(e.target.value)} className={`${inputCls} mt-1`} />
+          <input value={note} onChange={(e) => setNote(e.target.value)} className={inputCls} />
         </label>
       )}
       <label className={`${labelCls} sm:col-span-2 lg:col-span-3`}>
@@ -139,7 +141,7 @@ export function OfficeTimesForm({
           value={reason}
           onChange={(e) => setReason(e.target.value)}
           placeholder={mode === "create" ? "e.g. Phone broken, times from the site diary" : "e.g. Rhys phoned: finished at 16:10, forgot to tap Finish"}
-          className={`${inputCls} mt-1`}
+          className={inputCls}
         />
       </label>
       <div className="flex items-end">

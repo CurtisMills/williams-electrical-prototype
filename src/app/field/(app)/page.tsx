@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { requireRole } from "@/lib/auth/session";
-import { dateKeyOf, formatClock, formatDayKey, ukHour } from "@/lib/field/dates";
+import { dateKeyOf, formatClock, formatDayKey, formatDuration, toMinutes, ukHour } from "@/lib/field/dates";
 import { breakMinutes, netMinutes } from "@/lib/we/calc";
 import { readStore } from "@/lib/we/store";
 import { lookup, employeeDay, selectableJobs } from "@/lib/we/views";
@@ -12,17 +12,21 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Today" };
 
 function labelFor(store: WeStore, s: Pick<WorkSession, "jobId" | "activity" | "note">) {
-  const job = lookup(store).job(s.jobId);
-  if (job) return { title: `${job.ref} · ${job.title}`, site: lookup(store).site(job.siteId)?.name ?? "" };
-  return { title: activityLabel[s.activity], site: s.note };
+  const l = lookup(store);
+  const job = l.job(s.jobId);
+  if (job) return { ref: job.ref, jobTitle: job.title, title: `${job.ref} · ${job.title}`, site: l.site(job.siteId)?.name ?? "" };
+  return { ref: "", jobTitle: activityLabel[s.activity], title: activityLabel[s.activity], site: s.note };
 }
+
+const plannedLabel = (start: string, end: string) => `${start}–${end} · ${formatDuration(toMinutes(end) - toMinutes(start))} planned`;
 
 export default async function EngineerTodayPage() {
   const { user } = await requireRole("engineer");
   const store = await readStore();
   const day = employeeDay(store, user.id);
   const hour = ukHour();
-  const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+  const greeting = hour < 12 ? "Morning" : hour < 18 ? "Afternoon" : "Evening";
+  const pendingFor = new Set(day.pendingCorrections.map((c) => c.sessionId).filter(Boolean));
 
   const open = day.open;
   const openBreak = open?.breaks.find((b) => !b.end) ?? null;
@@ -58,6 +62,7 @@ export default async function EngineerTodayPage() {
       access: p.site.access,
       start: p.assignment.start,
       end: p.assignment.end,
+      planned: plannedLabel(p.assignment.start, p.assignment.end),
       recorded: p.sessions.map((s) => `${formatClock(s.startedAt)}–${s.finishedAt ? formatClock(s.finishedAt) : "now"}`),
     })),
     absencesToday: day.absencesToday.map((a) => a.label),
@@ -68,6 +73,8 @@ export default async function EngineerTodayPage() {
       finish: s.finishedAt ? formatClock(s.finishedAt) : null,
       breakMinutes: breakMinutes(s),
       netMinutes: netMinutes(s),
+      edited: s.edited,
+      changeRequested: pendingFor.has(s.id),
     })),
     upcoming: day.upcoming.map((d) => ({
       date: d.date,
@@ -86,6 +93,7 @@ export default async function EngineerTodayPage() {
         access: p.site.access,
         start: p.assignment.start,
         end: p.assignment.end,
+        planned: plannedLabel(p.assignment.start, p.assignment.end),
       })),
     })),
     jobs: selectableJobs(store),

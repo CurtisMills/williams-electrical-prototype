@@ -28,11 +28,11 @@ export default async function HistoryPage(props: PageProps<"/office/history">) {
 
   return (
     <>
-      <PageHeader overline="OFFICE" title="Work history">
+      <PageHeader overline="Office" title="Work history">
         Every recorded session. Filter by person, customer, site, job or date, or search any text. Open a record to correct it; the original is always kept.
       </PageHeader>
 
-      <form className="mb-5 grid gap-3 rounded-2xl border border-ink-100 bg-white p-4 sm:grid-cols-2 lg:grid-cols-4" method="get">
+      <form className="mb-5 grid gap-3 rounded-card border border-line bg-surface p-4 sm:grid-cols-2 lg:grid-cols-4" method="get">
         <label className={labelCls}>
           Employee
           <select name="employee" defaultValue={filter.employeeId ?? ""} className={`${inputCls} mt-1`}>
@@ -103,9 +103,9 @@ export default async function HistoryPage(props: PageProps<"/office/history">) {
         {rows.length === 0 ? (
           <Empty>No records match these filters.</Empty>
         ) : (
-          <div className="-mx-5 -my-5 overflow-x-auto">
+          <div className="-mx-5 -my-5 relative overflow-x-auto">
             <table className="w-full min-w-[960px] text-sm">
-              <thead className="border-b border-ink-100 bg-ink-50/60">
+              <thead className="border-b border-line bg-subtle">
                 <tr>
                   <th className={th}>Date</th>
                   <th className={th}>Employee</th>
@@ -118,43 +118,43 @@ export default async function HistoryPage(props: PageProps<"/office/history">) {
                   <th className={th}></th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-ink-50">
+              <tbody className="divide-y divide-line">
                 {rows.map((r) => {
                   const s = r.session;
                   return (
-                    <tr key={s.id} className={s.voided ? "text-ink-400 line-through" : undefined}>
+                    <tr key={s.id} className={s.voided ? "text-muted line-through" : undefined}>
                       <td className={`${td} whitespace-nowrap`}>{formatDayKey(dateKeyOf(s.startedAt), "short")}</td>
                       <td className={td}>{r.employee.name}</td>
                       <td className={td}>
                         {r.job ? (
                           <>
-                            <span className="font-mono text-xs font-bold">{r.job.ref}</span> {r.job.title}
+                            <span className="tabular-nums text-xs font-bold">{r.job.ref}</span> {r.job.title}
                           </>
                         ) : (
-                          <span className={s.activity === "unassigned" ? "font-bold text-signal-700" : undefined}>
+                          <span className={s.activity === "unassigned" ? "font-bold text-warning" : undefined}>
                             {activityLabel[s.activity]}
                             {s.note && `: ${s.note}`}
                           </span>
                         )}
                       </td>
                       <td className={td}>{r.customer ? `${r.customer.name} · ${r.site?.name}` : "–"}</td>
-                      <td className={`${td} font-mono whitespace-nowrap`}>
-                        {formatClock(s.startedAt)}–{s.finishedAt ? formatClock(s.finishedAt) : <span className="font-sans font-bold text-signal-700">no finish</span>}
-                        {s.finishedAt && dateKeyOf(s.finishedAt) !== dateKeyOf(s.startedAt) && <span className="block font-sans text-xs text-ink-500">next day</span>}
+                      <td className={`${td} tabular-nums whitespace-nowrap`}>
+                        {formatClock(s.startedAt)}–{s.finishedAt ? formatClock(s.finishedAt) : <span className="font-sans font-bold text-warning">no finish</span>}
+                        {s.finishedAt && dateKeyOf(s.finishedAt) !== dateKeyOf(s.startedAt) && <span className="block font-sans text-xs text-muted">next day</span>}
                       </td>
-                      <td className={`${td} font-mono`}>{r.breakMinutes ? `${Math.round(r.breakMinutes)}m` : "–"}</td>
-                      <td className={`${td} font-mono font-bold`}>{r.netMinutes !== null ? formatDuration(r.netMinutes) : "–"}</td>
+                      <td className={`${td} tabular-nums`}>{r.breakMinutes ? `${Math.round(r.breakMinutes)}m` : "–"}</td>
+                      <td className={`${td} tabular-nums font-bold`}>{r.netMinutes !== null ? formatDuration(r.netMinutes) : "–"}</td>
                       <td className={td}>
                         <span className="flex flex-wrap gap-1">
                           <TimesheetPill status={r.timesheet} />
                           {s.edited && <Pill tone="grey">Corrected</Pill>}
                           {s.source === "phone_offline" && <Pill tone="grey">Sent later</Pill>}
                           {s.source === "office" && <Pill tone="grey">Office entry</Pill>}
-                          {s.voided && <Pill tone="red">Removed</Pill>}
+                          {s.voided && <Pill tone="grey">Removed</Pill>}
                         </span>
                       </td>
                       <td className={td}>
-                        <Link href={`/office/records/${s.id}`} className="font-extrabold text-signal-700 hover:underline">
+                        <Link href={`/office/records/${s.id}`} className="font-bold text-primary hover:underline">
                           Open
                         </Link>
                       </td>

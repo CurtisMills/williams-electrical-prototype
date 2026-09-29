@@ -13,7 +13,7 @@ export default async function OfficeNotificationsPage() {
   const items = store.notifications.filter((n) => n.userId === user.id).sort((a, b) => b.at.localeCompare(a.at)).slice(0, 80);
   return (
     <section className="max-w-3xl">
-      <PageHeader overline="OFFICE" title="Updates" />
+      <PageHeader overline="Office" title="Updates" />
       <NotificationList items={items} portal="office" />
     </section>
   );

@@ -1,6 +1,6 @@
-// Williams Electrical employee app: keeps the Today screen available with no signal.
+// Williams Electrical Staff Portal (employee): keeps the Today screen available with no signal.
 // Pages are network-first (fresh when online, last copy when offline); build assets are cache-first.
-const CACHE = "we-field-v1";
+const CACHE = "we-field-v2";
 // Registered as /sw.js?dev=1 under `next dev`, where asset names are reused between edits,
 // so assets are network-first there too (the cache is only a fallback).
 const DEV = new URL(self.location.href).searchParams.has("dev");
@@ -33,7 +33,7 @@ self.addEventListener("fetch", (event) => {
   if (url.origin !== self.location.origin) return;
   if (url.pathname.startsWith("/api/") || url.pathname.includes("webpack-hmr") || url.pathname.startsWith("/__nextjs")) return;
 
-  const isAsset = url.pathname.startsWith("/_next/static/") || /\.(png|svg|ico|woff2?|css|js)$/.test(url.pathname);
+  const isAsset = url.pathname.startsWith("/_next/static/") || /\.(png|svg|ico|woff2?|ttf|css|js)$/.test(url.pathname);
   if (isAsset && DEV) {
     event.respondWith(networkFirst(req, req));
     return;

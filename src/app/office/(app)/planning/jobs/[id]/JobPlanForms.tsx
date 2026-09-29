@@ -15,7 +15,7 @@ export function RequirementForm({ jobId, defaultFrom, defaultTo }: { jobId: stri
   const [end, setEnd] = useState("16:00");
   return (
     <form
-      className="grid grid-cols-2 gap-3 sm:grid-cols-3"
+      className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
       onSubmit={(e) => {
         e.preventDefault();
         void run<{ label: string; created: number; updated: number }>(
@@ -27,39 +27,39 @@ export function RequirementForm({ jobId, defaultFrom, defaultTo }: { jobId: stri
     >
       <label className={labelCls}>
         From
-        <input type="date" required value={from} onChange={(e) => setFrom(e.target.value)} className={`${inputCls} mt-1`} />
+        <input type="date" required value={from} onChange={(e) => setFrom(e.target.value)} className={inputCls} />
       </label>
       <label className={labelCls}>
         To
-        <input type="date" required value={to} min={from} onChange={(e) => setTo(e.target.value)} className={`${inputCls} mt-1`} />
+        <input type="date" required value={to} min={from} onChange={(e) => setTo(e.target.value)} className={inputCls} />
       </label>
       <label className={labelCls}>
         Role
-        <select value={role} onChange={(e) => setRole(e.target.value)} className={`${inputCls} mt-1`}>
+        <select value={role} onChange={(e) => setRole(e.target.value)} className={inputCls}>
           <option value="electrician">Electrician</option>
           <option value="apprentice">Apprentice</option>
         </select>
       </label>
       <label className={labelCls}>
         How many
-        <input type="number" min={1} max={10} value={count} onChange={(e) => setCount(e.target.value)} className={`${inputCls} mt-1`} />
+        <input type="number" min={1} max={10} value={count} onChange={(e) => setCount(e.target.value)} className={inputCls} />
       </label>
       <label className={labelCls}>
         Start
-        <input type="time" value={start} onChange={(e) => setStart(e.target.value)} className={`${inputCls} mt-1`} />
+        <input type="time" value={start} onChange={(e) => setStart(e.target.value)} className={inputCls} />
       </label>
       <label className={labelCls}>
         End
-        <input type="time" value={end} onChange={(e) => setEnd(e.target.value)} className={`${inputCls} mt-1`} />
+        <input type="time" value={end} onChange={(e) => setEnd(e.target.value)} className={inputCls} />
       </label>
-      <div className="col-span-2 sm:col-span-3">
+      <div className="sm:col-span-2 lg:col-span-3">
         <button type="submit" disabled={busy} className={btn.dark}>
           Save requirement
         </button>
-        <p className="mt-1 text-xs text-ink-500">Same role and times on a day updates the number needed instead of adding a duplicate.</p>
+        <p className="mt-2 text-label text-muted">Same role and times on a day updates the number needed instead of adding a duplicate.</p>
       </div>
-      {error && <div className="col-span-2 sm:col-span-3"><Notice tone="error">{error}</Notice></div>}
-      {message && <div className="col-span-2 sm:col-span-3"><Notice tone="success">{message}</Notice></div>}
+      {error && <div className="sm:col-span-2 lg:col-span-3"><Notice tone="error">{error}</Notice></div>}
+      {message && <div className="sm:col-span-2 lg:col-span-3"><Notice tone="success">{message}</Notice></div>}
     </form>
   );
 }
@@ -83,7 +83,7 @@ export function AssignAcrossForm({
   const role = employees.find((e) => e.id === employeeId)?.role ?? "electrician";
   return (
     <form
-      className="grid grid-cols-2 gap-3"
+      className="grid gap-4 sm:grid-cols-2"
       onSubmit={async (e) => {
         e.preventDefault();
         const res = await run<{ assigned: string[]; skipped: { date: string; reason: string }[] }>(
@@ -94,9 +94,9 @@ export function AssignAcrossForm({
         setSkipped(res?.skipped ?? []);
       }}
     >
-      <label className={`${labelCls} col-span-2`}>
+      <label className={`${labelCls} sm:col-span-2`}>
         Person
-        <select required value={employeeId} onChange={(e) => setEmployeeId(e.target.value)} className={`${inputCls} mt-1`}>
+        <select required value={employeeId} onChange={(e) => setEmployeeId(e.target.value)} className={inputCls}>
           <option value="" disabled>
             Choose…
           </option>
@@ -109,22 +109,22 @@ export function AssignAcrossForm({
       </label>
       <label className={labelCls}>
         From
-        <input type="date" required value={from} onChange={(e) => setFrom(e.target.value)} className={`${inputCls} mt-1`} />
+        <input type="date" required value={from} onChange={(e) => setFrom(e.target.value)} className={inputCls} />
       </label>
       <label className={labelCls}>
         To
-        <input type="date" required value={to} min={from} onChange={(e) => setTo(e.target.value)} className={`${inputCls} mt-1`} />
+        <input type="date" required value={to} min={from} onChange={(e) => setTo(e.target.value)} className={inputCls} />
       </label>
-      <div className="col-span-2">
+      <div className="sm:col-span-2">
         <button type="submit" disabled={busy} className={btn.dark}>
           Assign to open {role} slots
         </button>
-        <p className="mt-1 text-xs text-ink-500">Each day is checked separately. Days with leave, other bookings or no open place are skipped with the reason.</p>
+        <p className="mt-2 text-label text-muted">Each day is checked separately. Days with holiday, other bookings or no open place are skipped with the reason.</p>
       </div>
-      {error && <div className="col-span-2"><Notice tone="error">{error}</Notice></div>}
-      {message && <div className="col-span-2"><Notice tone="success">{message}</Notice></div>}
+      {error && <div className="sm:col-span-2"><Notice tone="error">{error}</Notice></div>}
+      {message && <div className="sm:col-span-2"><Notice tone="success">{message}</Notice></div>}
       {skipped.length > 0 && (
-        <ul className="col-span-2 max-h-40 overflow-y-auto rounded-lg bg-amber-50 p-2 text-xs text-amber-950">
+        <ul className="sm:col-span-2 max-h-40 overflow-y-auto rounded-control bg-warning-surface p-3 text-label text-ink">
           {skipped.map((s) => (
             <li key={s.date}>
               <span className="font-bold">{s.date}:</span> {s.reason}

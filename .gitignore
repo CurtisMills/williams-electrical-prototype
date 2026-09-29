@@ -42,3 +42,6 @@ next-env.d.ts
 
 # prototype field-work data (sample, local only)
 /.data
+
+# design verification screenshots
+/.shots/

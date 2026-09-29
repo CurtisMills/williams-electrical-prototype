@@ -27,7 +27,7 @@ export default async function ExportsPage(props: PageProps<"/office/exports">) {
 
   return (
     <>
-      <PageHeader overline="OFFICE" title="Exports">
+      <PageHeader overline="Office" title="Exports">
         Final exports include approved timesheets only, so payroll and invoices match what was signed off. Use a draft preview to check figures before approval. Every file is logged; if a
         correction later changes an approved week, its earlier exports are marked superseded.
       </PageHeader>
@@ -88,10 +88,10 @@ export default async function ExportsPage(props: PageProps<"/office/exports">) {
           </label>
           <fieldset className="sm:col-span-2">
             <legend className={labelCls}>Records</legend>
-            <label className="mt-1 mr-4 inline-flex min-h-10 items-center gap-2 text-sm font-semibold">
+            <label className="mt-1 mr-4 inline-flex min-h-12 items-center gap-2 text-sm font-semibold">
               <input type="radio" name="mode" value="final" defaultChecked className="h-4 w-4" /> Final (approved only)
             </label>
-            <label className="inline-flex min-h-10 items-center gap-2 text-sm font-semibold">
+            <label className="inline-flex min-h-12 items-center gap-2 text-sm font-semibold">
               <input type="radio" name="mode" value="draft" className="h-4 w-4" /> Draft preview (includes unapproved)
             </label>
           </fieldset>
@@ -107,7 +107,7 @@ export default async function ExportsPage(props: PageProps<"/office/exports">) {
             </button>
           </div>
         </form>
-        <p className="mt-4 text-sm text-ink-600">
+        <p className="mt-4 text-sm text-muted">
           Week of {week}: <strong>{formatDuration(final.totalMinutes)}</strong> approved of {formatDuration(draft.totalMinutes)} recorded.
           {unapproved.length > 0 && <> Not yet approved: {unapproved.map((e) => e.name).join(", ")}.</>}
           {draft.open.length > 0 && <> {draft.open.length} open record(s) are excluded until finished.</>}
@@ -116,11 +116,11 @@ export default async function ExportsPage(props: PageProps<"/office/exports">) {
 
       <Card title="Export log" className="mt-6">
         {log.length === 0 ? (
-          <p className="text-sm text-ink-500">Nothing exported yet.</p>
+          <p className="text-sm text-muted">Nothing exported yet.</p>
         ) : (
-          <div className="-mx-5 -my-5 overflow-x-auto">
+          <div className="-mx-5 -my-5 relative overflow-x-auto">
             <table className="w-full min-w-[820px] text-sm">
-              <thead className="border-b border-ink-100 bg-ink-50/60">
+              <thead className="border-b border-line bg-subtle">
                 <tr>
                   <th className={th}>Reference</th>
                   <th className={th}>Type</th>
@@ -130,21 +130,21 @@ export default async function ExportsPage(props: PageProps<"/office/exports">) {
                   <th className={th}>State</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-ink-50">
+              <tbody className="divide-y divide-line">
                 {log.map((x) => (
-                  <tr key={x.id} className={x.supersededAt ? "bg-amber-50/60" : undefined}>
-                    <td className={`${td} font-mono font-bold`}>{x.id}</td>
+                  <tr key={x.id} className={x.supersededAt ? "bg-warning-surface" : undefined}>
+                    <td className={`${td} tabular-nums font-bold`}>{x.id}</td>
                     <td className={td}>
                       {kindLabel[x.kind]}
-                      {Object.keys(x.filters).length > 0 && <span className="block text-xs text-ink-500">Filtered: {Object.keys(x.filters).join(", ")}</span>}
+                      {Object.keys(x.filters).length > 0 && <span className="block text-xs text-muted">Filtered: {Object.keys(x.filters).join(", ")}</span>}
                     </td>
                     <td className={`${td} whitespace-nowrap`}>
                       {x.from} to {x.to}
                     </td>
-                    <td className={`${td} font-mono`}>{formatDuration(x.totalMinutes)}</td>
+                    <td className={`${td} tabular-nums`}>{formatDuration(x.totalMinutes)}</td>
                     <td className={td}>
                       {formatWhen(x.generatedAt)}
-                      <span className="block text-xs text-ink-500">{names.get(x.generatedBy) ?? x.generatedBy}</span>
+                      <span className="block text-xs text-muted">{names.get(x.generatedBy) ?? x.generatedBy}</span>
                     </td>
                     <td className={td}>
                       {x.mode === "draft" ? (
@@ -152,7 +152,7 @@ export default async function ExportsPage(props: PageProps<"/office/exports">) {
                       ) : x.supersededAt ? (
                         <>
                           <Pill tone="amber">Superseded</Pill>
-                          <span className="block text-xs text-amber-900">{x.supersededReason}</span>
+                          <span className="block text-xs text-warning">{x.supersededReason}</span>
                         </>
                       ) : (
                         <Pill tone="green">Current</Pill>

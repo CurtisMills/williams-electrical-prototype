@@ -1,11 +1,12 @@
-# Williams Electrical – Staff App Prototype
+# Williams Electrical Staff Portal (prototype)
 
-A working demonstration for **Williams Electrical**: a mobile-first app for employees and an office portal for planners and administrators. It covers the working day, annual leave, attendance, six-week planning, timesheets and exports. Every screen runs on **sample demo data**, which is labelled as such throughout. This is a prototype for discussion, not production code.
+A working demonstration of the **Williams Electrical Staff Portal**: a mobile-first Employee experience and an Office experience for planners and administrators. It covers time recording and holiday, plus the attendance, crew planning, timesheet and export tools the office needs around them. Every screen runs on **sample demo data**, which is labelled as such throughout. This is a prototype for discussion, not production code.
 
 ## Stack
 
 - **Next.js 16 (App Router)**: React front end and TypeScript API routes in one project
-- **Tailwind CSS v4**, **lucide-react** icons
+- **Tailwind CSS v4** with the brand tokens in `src/app/globals.css`, **Manrope** loaded locally (`src/app/fonts/`, SIL OFL), **lucide-react** outline icons
+- **Shared UI:** `src/components/portal/` (Button, TextField, StatusBadge, PageHeading, JobCard, TimeRecord, HolidayRequest, AvailabilitySummary, Notice, Dialog)
 - **Sign-in:** signed, httpOnly session cookies (HMAC-SHA256), one per portal. `src/proxy.ts` checks them, and every page and API route checks the role again on the server.
 - **Storage:** a JSON file on the server (`.data/we-store.json`, gitignored). Writes are serialised and use version checks; each change writes an audit entry and, where relevant, a notification.
 - **Time zone:** everything is calculated in Europe/London, including across clock changes. A session that runs past midnight is split between the two days.
@@ -31,24 +32,24 @@ Every account uses the password **`Williams2026!`** (override with `DEMO_PASSWOR
 | Office | Megan Lloyd, office administrator | `megan.lloyd@williamselectrical.co.uk` |
 | Office | Gareth Williams, director and planner | `gareth.williams@williamselectrical.co.uk` |
 
-Once signed in, the **Demo** menu in the header or sidebar lets you **view the app as** any other person (employee or office) without signing out. It also has **Reset demo data**, which restores the seeded scenario and clears any taps still waiting on the phone.
+Once signed in, **Demo tools** in the strip under the header lets you **view the app as** any other person (employee or office) without signing out. It also has **Reset demo data**, which restores the seeded scenario and clears any taps still waiting on the phone.
 
 ## Screens
 
 | Route | Who | What it does |
 | --- | --- | --- |
-| `/field` | Employee | Today's jobs with address, maps link and access notes. **Start work** in one tap. A banner shows the active job with Break/Resume, Change job and a confirmed Finish. Start other work (another job, travel, or "can't find the job" with a note). If a session is still open from an earlier day, the employee is asked for the finish time first. Also shows what's been recorded today and the next seven days. |
-| `/field/leave` | Employee | Allowance left, approved and pending. Request full or half days, with a live preview of the allowance (blocked if it would go over). Confirmation with a reference. Withdraw a pending request or ask to cancel approved leave. History. |
-| `/field/hours` | Employee | Week-by-week recorded hours, **Fix** on any session, a form for forgotten entries, and change requests with their status. **Submit this week** as a timesheet. |
-| `/field/notifications` | Employee | Decisions on leave, corrections and timesheets, and new assignments. |
-| `/office` | Office | Team status today: working, on a break, recorded finished, on leave, and **No start recorded**, shown as an information gap rather than an absence. Planned versus recorded, first start, hours worked, last update received. A "Needs attention" list. Refreshes every 20 seconds. |
-| `/office/exceptions` | Office | Missing finishes, no start recorded, correction requests (original and proposed values side by side, approve or reject inline), work without a job, unusually long sessions, conflicting phone taps, needs-replacement slots and timesheets to review. The warning thresholds are editable here. |
+| `/field` | Employee | **Today.** The next job first, with address, maps link, access notes and planned hours, then **Start job**. The button shows "Starting…" and can't be tapped twice; "Started at 08:02" appears only once the server confirms it (or "saved on this phone" when offline). The active job card has Finish job (with a confirm step), Start break/Resume work and Change job. Start other work (another job, travel, or "can't find the job" with a note). If a session is still open from an earlier day, the employee is asked for the finish time first. Also shows what's been recorded today and the next seven days. |
+| `/field/leave` | Employee | **Holiday.** Balance left, approved and pending. Request holiday for full or half days, with the duration and balance previewed as you pick dates (blocked if it would go over). Pending, Approved and Declined states with a reference. Withdraw a pending request or ask to cancel approved holiday. History. |
+| `/field/hours` | Employee | **Time (My time).** Week-by-week recorded hours, **Correct** on any record, a form for forgotten entries, and correction requests with their status. **Send this week to the office** as a timesheet. |
+| `/field/notifications` | Employee | Decisions on holiday, corrections and timesheets, and new assignments. |
+| `/office` | Office | **Today ("The crew today").** Summary counts for working, due to start, no start recorded, on holiday and holiday requests; each links to the matching records. Crew table with status, job and site, start, hours worked and last update. **No start recorded** is shown as an information gap, not an absence. Pending holiday requests with crew availability and **Review request**, and a "Needs attention" list. Refreshes every 20 seconds. |
+| `/office/exceptions` | Office | **Needs attention.** Missing finishes, no start recorded, correction requests (original and proposed values side by side, approve or reject inline), work without a job, unusually long sessions, conflicting phone taps, needs-replacement slots and timesheets to review. The warning thresholds (Settings) are editable here. |
 | `/office/history` | Office | Search records by person, job, customer, date and status. Add a record on someone's behalf. |
 | `/office/records/[id]` | Office | Record detail: original values, the phone taps received, a correction form (reason required), remove/restore, and the full audit trail. |
-| `/office/leave`, `/office/leave/[id]` | Office | Requests waiting, cancellation requests, booked leave and history. The detail page shows the allowance, staffing impact by day (which planned work becomes unfilled and who could cover), and who else is off. Approve (with a warning if places would be unfilled) or decline. The office can also record leave directly. |
-| `/office/planning` | Office | Six-week plan in daily or weekly view: a person-by-day grid with job chips, absences and free hours. Unfilled places and needs-replacement flags. The preview toggle adds pending leave and tentative jobs with dashed outlines, kept separate from the confirmed plan. |
+| `/office/leave`, `/office/leave/[id]` | Office | **Holiday.** Requests waiting (with crew availability), cancellation requests, booked holiday and history. The review page shows requested days, the balance, crew availability led by the tightest day with a "View day" link into the crew plan, affected planned work and who could cover, and who else is off. **Approve holiday** (low cover is a warning, not a block) or decline with a reason. The office can also record holiday directly. |
+| `/office/planning` | Office | **Crew.** Six-week plan in daily or weekly view: a person-by-day grid with job chips, absences and free hours. Unfilled places and needs-replacement flags. The preview toggle adds pending holiday and tentative jobs with dashed outlines, kept separate from the confirmed plan. |
 | `/office/planning/jobs/[id]` | Office | Staffing by day for one job: requirements by role, assign people (single day or across a date range, listing the days skipped), and "Why not others?" explaining each blocked candidate (on leave, wrong role, already booked, not a working day). |
-| `/office/jobs` | Office | Jobs, customers and sites. Create jobs and sites, and change job status (reopening needs a reason). |
+| `/office/jobs` | Office | **Jobs.** Jobs, customers and sites. Create jobs and sites, and change job status (reopening needs a reason). |
 | `/office/timesheets`, `/office/timesheets/[employeeId]` | Office | Weekly timesheets by employee or by customer and job, with filters and a comparison with the previous week. Approve or request changes. A later correction reopens an approved week automatically. |
 | `/office/exports` | Office | Employee CSV, customer CSV and a printable customer summary. Final exports use approved timesheets only; a draft preview includes unapproved ones. Every export is logged and marked **Superseded** if a later correction changes an approved week. |
 | `/office/notifications` | Office | New requests, submissions and phone conflicts. |
@@ -63,7 +64,7 @@ These are sensible defaults for the demo. Confirm each one before real use.
 - **Bank holidays:** England and Wales, 2026–2027 (`src/lib/we/seed.ts`).
 - **Half days:** morning 08:00–12:00 and afternoon 12:00–16:00. A full working day is 08:00–16:00.
 - **Timesheet week:** Monday to Sunday.
-- **Long session warning:** over 11 hours. **No start recorded:** 30 minutes after the planned start with nothing received. Both can be changed on the Exceptions page.
+- **Long session warning:** over 11 hours. **No start recorded:** 30 minutes after the planned start with nothing received. Both can be changed under Settings on the Needs attention page.
 - **Role matching is strict:** an apprentice can't fill an electrician place and vice versa.
 - **A break entered by hand** in a correction is placed in the middle of the session.
 - **A forgotten finish from an earlier day**, entered by the employee, applies straight away so they can start today. It still goes to the office to confirm, and the office can edit or reject it.
@@ -71,17 +72,17 @@ These are sensible defaults for the demo. Confirm each one before real use.
 
 ## Working offline
 
-Taps on the employee app are saved on the phone with the time they happened, and sent in order when the signal returns. The screen shows the queued taps straight away with a "waiting to send" banner. The office sees the record once it arrives. The recorded time is when the employee tapped, not when it synced, and "Last update received" shows the gap. If a queued tap conflicts with something the office changed in the meantime, it is kept and flagged on the Exceptions page rather than silently dropped. A service worker keeps the `/field` pages available without a connection.
+Taps on the employee app are saved on the phone with the time they happened, and sent in order when the signal returns. The screen shows the queued taps straight away with a "waiting to send" banner. The office sees the record once it arrives. The recorded time is when the employee tapped, not when it synced, and "Last update received" shows the gap. If a queued tap conflicts with something the office changed in the meantime, it is kept and flagged on the Needs attention page rather than silently dropped. A service worker keeps the `/field` pages available without a connection.
 
 ## Eight-step demo script
 
-1. Sign in as **Jordan** on a phone and tap **Start work**. Sign in as **Megan** on a desktop: Jordan shows as Working on Office Today.
-2. Jordan taps **Change job**, then **Finish**. Both sessions appear under My hours and in Work history.
-3. Jordan requests leave on a future day with planned work. Megan sees it on Leave with the staffing impact.
-4. Megan approves despite the warning. The job's slot now shows as unfilled on Planning and Exceptions.
+1. Sign in as **Jordan** on a phone and tap **Start job**. Sign in as **Megan** on a desktop: Jordan shows as Working on Office Today.
+2. Jordan taps **Change job**, then **Finish job**. Both records appear under My time and in Work history.
+3. Jordan requests holiday on a future day with planned work. Megan sees it on Holiday with crew availability and the affected work.
+4. Megan approves despite the warning. The job's slot now shows as unfilled on Crew and Needs attention.
 5. On the job's planning page, Megan assigns a replacement. The shortage clears and the replacement gets a notification.
 6. Megan corrects **Rhys's** missing finish from an earlier day, giving a reason. The audit trail records it and his totals update.
-7. Jordan submits the week under My hours. Megan approves it on Timesheets.
+7. Jordan sends the week from My time. Megan approves it on Timesheets.
 8. Megan downloads the employee and customer CSVs and opens the printable customer summary on Exports.
 
 To check the same scenario automatically against a temporary copy of the data:
@@ -91,6 +92,12 @@ npm run demo:check
 ```
 
 It runs all eight steps plus a check that a correction to an approved week reopens it and supersedes its export.
+
+The presentation rules behind the time and holiday screens (which job shows first, crew availability and low cover, "Not available" balances) have their own check:
+
+```bash
+npm run ui:check
+```
 
 ## Configuration
 

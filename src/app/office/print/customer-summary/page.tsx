@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { FieldBrand } from "@/components/field/ui";
+import { CompanyLogo } from "@/components/portal/brand";
 import { requireRole } from "@/lib/auth/session";
 import { decimalHours, formatDayKey, formatDuration } from "@/lib/field/dates";
 import { customerSummary, parseHoursFilter } from "@/lib/we/exports";
@@ -22,34 +22,32 @@ export default async function CustomerSummaryPage(props: PageProps<"/office/prin
   const draft = filter.approval === "all";
 
   return (
-    <main className="mx-auto max-w-3xl bg-white p-8 text-ink-950 print:p-0">
-      <div className="mb-6 flex items-start justify-between gap-6 border-b-4 border-signal-600 pb-4">
-        <div className="rounded-lg bg-ink-900 p-3">
-          <FieldBrand className="h-16 w-auto" />
-        </div>
+    <main className="mx-auto max-w-3xl bg-white p-8 text-ink print:p-0">
+      <div className="mb-6 flex items-start justify-between gap-6 border-b-4 border-primary pb-4">
+        <CompanyLogo tone="onLight" className="h-20 w-auto" />
         <div className="text-right text-sm">
-          <p className="text-lg font-extrabold">Hours summary</p>
+          <p className="text-lg font-bold">Hours summary</p>
           <p>
             {formatDayKey(filter.from, "long")} to {formatDayKey(filter.to, "long")}
           </p>
-          <p className="text-ink-500">Demo data · fictional prototype records</p>
+          <p className="text-muted">Demo data · fictional prototype records</p>
         </div>
       </div>
 
       {draft && (
-        <p className="mb-4 rounded border-2 border-amber-500 bg-amber-50 p-3 text-sm font-bold text-amber-950">
-          DRAFT PREVIEW: includes hours not yet approved. Not for invoicing.
+        <p className="mb-4 rounded-control border-2 border-warning bg-warning-surface p-3 text-sm font-bold text-ink">
+          Draft preview: includes hours not yet approved. Not for invoicing.
         </p>
       )}
 
       {summary.lines.length === 0 ? (
-        <p className="text-sm text-ink-600">No {draft ? "" : "approved "}job hours in this period.</p>
+        <p className="text-sm text-muted">No {draft ? "" : "approved "}job hours in this period.</p>
       ) : (
         [...byCustomer.entries()].map(([customer, lines]) => (
           <section key={customer} className="mb-8 break-inside-avoid">
-            <h2 className="mb-2 text-xl font-extrabold">{customer}</h2>
+            <h2 className="mb-2 text-xl font-bold">{customer}</h2>
             <table className="w-full text-sm">
-              <thead className="border-b-2 border-ink-900 text-left">
+              <thead className="border-b-2 border-ink text-left">
                 <tr>
                   <th className="py-1.5">Date</th>
                   <th className="py-1.5">Site</th>
@@ -57,7 +55,7 @@ export default async function CustomerSummaryPage(props: PageProps<"/office/prin
                   <th className="py-1.5 text-right">Hours</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-ink-100">
+              <tbody className="divide-y divide-line">
                 {lines.map((l) => (
                   <tr key={`${l.jobRef}-${l.date}`}>
                     <td className="py-1.5 whitespace-nowrap">{formatDayKey(l.date, "short")}</td>
@@ -65,16 +63,16 @@ export default async function CustomerSummaryPage(props: PageProps<"/office/prin
                     <td className="py-1.5">
                       {l.jobRef} · {l.jobTitle}
                     </td>
-                    <td className="py-1.5 text-right font-mono">{decimalHours(l.minutes)}</td>
+                    <td className="py-1.5 text-right tabular-nums">{decimalHours(l.minutes)}</td>
                   </tr>
                 ))}
               </tbody>
-              <tfoot className="border-t-2 border-ink-900 font-extrabold">
+              <tfoot className="border-t-2 border-ink font-bold">
                 <tr>
                   <td className="py-1.5" colSpan={3}>
                     Total for {customer}
                   </td>
-                  <td className="py-1.5 text-right font-mono">{decimalHours(lines.reduce((n, l) => n + l.minutes, 0))}</td>
+                  <td className="py-1.5 text-right tabular-nums">{decimalHours(lines.reduce((n, l) => n + l.minutes, 0))}</td>
                 </tr>
               </tfoot>
             </table>
@@ -82,7 +80,7 @@ export default async function CustomerSummaryPage(props: PageProps<"/office/prin
         ))
       )}
 
-      <p className="mt-6 border-t border-ink-100 pt-3 text-xs text-ink-500">
+      <p className="mt-6 border-t border-line pt-3 text-xs text-muted">
         Total {formatDuration(summary.totalMinutes)} ({decimalHours(summary.totalMinutes)} hours). Hours are net of breaks, in UK time, and sessions crossing midnight are counted on each date.
         {summary.openCount > 0 && ` ${summary.openCount} incomplete record(s) are not included.`} Williams Electrical (Cymru) Ltd.
       </p>

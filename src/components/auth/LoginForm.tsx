@@ -2,7 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
+import { Button } from "@/components/portal/button";
+import { FieldError, inputClass, labelClass } from "@/components/portal/field";
+import { Notice } from "@/components/portal/notice";
 
 export function LoginForm({ portal }: { portal: "field" | "office" }) {
   const router = useRouter();
@@ -10,17 +13,19 @@ export function LoginForm({ portal }: { portal: "field" | "office" }) {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [tried, setTried] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [resetHint, setResetHint] = useState(false);
 
+  const emailError = tried && !email.trim() ? "Enter your email address." : null;
+  const passwordError = tried && !password ? "Enter your password." : null;
+
   async function submit(event: FormEvent) {
     event.preventDefault();
-    if (!email.trim() || !password) {
-      setError("Enter your email and password.");
-      return;
-    }
-    setBusy(true);
+    setTried(true);
     setError(null);
+    if (!email.trim() || !password) return;
+    setBusy(true);
     try {
       const res = await fetch("/api/auth/login", {
         method: "POST",
@@ -29,7 +34,7 @@ export function LoginForm({ portal }: { portal: "field" | "office" }) {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setError(data.error ?? "Couldn’t sign you in. Please try again.");
+        setError(data.error ?? "Couldn’t sign you in. Try again.");
         setBusy(false);
         return;
       }
@@ -40,14 +45,15 @@ export function LoginForm({ portal }: { portal: "field" | "office" }) {
     }
   }
 
-  const input =
-    "min-h-13 w-full rounded-xl border border-ink-200 bg-white px-4 text-base text-ink-950 outline-none placeholder:text-ink-400 focus-visible:border-signal-600 focus-visible:ring-3 focus-visible:ring-signal-400/30";
-
   return (
     <form onSubmit={submit} noValidate className="space-y-5">
-      <label className="block">
-        <span className="mb-2 block text-sm font-bold text-ink-800">Email</span>
+      <div>
+        <label htmlFor="signin-email" className={labelClass}>
+          Email
+        </label>
         <input
+          id="signin-email"
+          name="email"
           type="email"
           inputMode="email"
           autoComplete="username"
@@ -55,61 +61,69 @@ export function LoginForm({ portal }: { portal: "field" | "office" }) {
           spellCheck={false}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="name@williamselectrical.co.uk"
-          className={input}
+          aria-invalid={emailError ? true : undefined}
+          aria-describedby={emailError ? "signin-email-error" : undefined}
+          className={`mt-1.5 ${inputClass(!!emailError)}`}
         />
-      </label>
+        {emailError && <FieldError id="signin-email-error">{emailError}</FieldError>}
+      </div>
 
-      <label className="block">
-        <span className="mb-2 flex items-center justify-between text-sm font-bold text-ink-800">
-          Password
+      <div>
+        <div className="flex items-center justify-between gap-3">
+          <label htmlFor="signin-password" className={labelClass}>
+            Password
+          </label>
           <button
             type="button"
             onClick={() => setResetHint((v) => !v)}
-            className="text-sm font-semibold text-signal-700 hover:underline"
+            aria-expanded={resetHint}
+            aria-controls="signin-reset-hint"
+            className="-my-2 min-h-11 rounded-control px-1 text-label font-semibold text-primary underline-offset-4 hover:underline"
           >
             Forgot password?
           </button>
-        </span>
-        <span className="relative block">
+        </div>
+        <div className="relative mt-1.5">
           <input
+            id="signin-password"
+            name="password"
             type={showPassword ? "text" : "password"}
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className={`${input} pr-13`}
+            aria-invalid={passwordError ? true : undefined}
+            aria-describedby={[passwordError ? "signin-password-error" : null, resetHint ? "signin-reset-hint" : null].filter(Boolean).join(" ") || undefined}
+            className={`${inputClass(!!passwordError)} pr-14`}
           />
           <button
             type="button"
             onClick={() => setShowPassword((v) => !v)}
             aria-label={showPassword ? "Hide password" : "Show password"}
-            className="absolute inset-y-0 right-0 grid w-13 place-items-center text-ink-400 hover:text-ink-700"
+            aria-pressed={showPassword}
+            className="absolute inset-y-0 right-0 grid w-12 place-items-center rounded-r-control text-muted hover:text-ink"
           >
-            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+            {showPassword ? <EyeOff className="size-5" aria-hidden /> : <Eye className="size-5" aria-hidden />}
           </button>
-        </span>
-      </label>
+        </div>
+        {passwordError && <FieldError id="signin-password-error">{passwordError}</FieldError>}
+        {resetHint && (
+          <p id="signin-reset-hint" className="mt-2 text-label text-muted">
+            Contact the office to reset your password.
+          </p>
+        )}
+      </div>
 
-      {resetHint && (
-        <p role="status" className="rounded-lg bg-ink-50 px-3 py-2.5 text-sm text-ink-600">
-          Contact the office to reset your password.
-        </p>
-      )}
+      <div role="alert" aria-atomic="true">
+        {error && (
+          <Notice tone="error" title="Couldn’t sign you in" live={false}>
+            {error}
+          </Notice>
+        )}
+      </div>
 
-      {error && (
-        <p role="alert" className="rounded-lg bg-signal-600/10 px-3 py-2.5 text-sm text-signal-800">
-          {error}
-        </p>
-      )}
-
-      <button
-        type="submit"
-        disabled={busy}
-        className="flex min-h-14 w-full items-center justify-center gap-2 rounded-xl bg-signal-600 px-4 text-base font-extrabold text-white hover:bg-signal-700 active:bg-signal-800 disabled:opacity-70"
-      >
-        {busy && <Loader2 className="h-5 w-5 animate-spin" />}
+      <Button type="submit" variant="primary" size="lg" full busy={busy} busyLabel="Signing in…">
         Sign in
-      </button>
+      </Button>
     </form>
   );
 }

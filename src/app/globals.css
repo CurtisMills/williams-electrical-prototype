@@ -1,6 +1,110 @@
 @import "tailwindcss";
 
+/*
+ * Williams Electrical Staff Portal tokens.
+ * Palette and roles follow the brand kit's tokens.css exactly. The --ww-* names are internal.
+ * Components use the semantic Tailwind names mapped in @theme below, never raw hex values.
+ */
+:root {
+  --ww-ink: #18262c;
+  --ww-porcelain: #f4f3ee;
+  --ww-white: #ffffff;
+  --ww-signal: #c9283d;
+  --ww-signal-hover: #ad2033;
+  --ww-signal-pressed: #94192a;
+  --ww-signal-soft: #fbecef;
+  --ww-signal-on-ink: #ff7481;
+  --ww-steel: #59676c;
+  --ww-line: #cbd3d3;
+  --ww-control-line: #7b888d;
+
+  --ww-background: var(--ww-porcelain);
+  --ww-surface: var(--ww-white);
+  --ww-surface-subtle: #eaede9;
+  --ww-text: var(--ww-ink);
+  --ww-text-muted: var(--ww-steel);
+  --ww-text-on-dark: var(--ww-white);
+  --ww-border: var(--ww-line);
+  --ww-input-border: var(--ww-control-line);
+  --ww-primary: var(--ww-signal);
+  --ww-primary-foreground: var(--ww-white);
+  --ww-primary-hover: var(--ww-signal-hover);
+  --ww-primary-pressed: var(--ww-signal-pressed);
+  --ww-focus: #245f8f;
+  --ww-nav-selected: var(--ww-signal-soft);
+  --ww-nav-selected-text: var(--ww-signal);
+  --ww-success: #167451;
+  --ww-success-surface: #e9f4ed;
+  --ww-warning: #8a5a08;
+  --ww-warning-surface: #fff2d6;
+  --ww-error: #b32436;
+  --ww-error-surface: #fbecef;
+  --ww-info: #245f8f;
+  --ww-info-surface: #eaf2f9;
+
+  --ww-shadow-raised: 0 8px 24px rgb(24 38 44 / 8%);
+  --ww-shadow-overlay: 0 24px 64px rgb(24 38 44 / 18%);
+  --ww-duration-fast: 140ms;
+  --ww-duration-standard: 180ms;
+  --ww-ease: cubic-bezier(0.2, 0, 0, 1);
+}
+
 @theme inline {
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --color-canvas: var(--ww-background);
+  --color-surface: var(--ww-surface);
+  --color-subtle: var(--ww-surface-subtle);
+  --color-ink: var(--ww-ink);
+  --color-muted: var(--ww-text-muted);
+  --color-line: var(--ww-border);
+  --color-control: var(--ww-input-border);
+  --color-primary: var(--ww-primary);
+  --color-primary-hover: var(--ww-primary-hover);
+  --color-primary-pressed: var(--ww-primary-pressed);
+  --color-primary-soft: var(--ww-nav-selected);
+  --color-accent-on-ink: var(--ww-signal-on-ink);
+  --color-focus: var(--ww-focus);
+  --color-success: var(--ww-success);
+  --color-success-surface: var(--ww-success-surface);
+  --color-warning: var(--ww-warning);
+  --color-warning-surface: var(--ww-warning-surface);
+  --color-error: var(--ww-error);
+  --color-error-surface: var(--ww-error-surface);
+  --color-info: var(--ww-info);
+  --color-info-surface: var(--ww-info-surface);
+
+  /* Supporting text never drops below 13px. */
+  --text-xs: 0.8125rem;
+  --text-xs--line-height: 1.45;
+  --text-caption: 0.8125rem;
+  --text-caption--line-height: 1.45;
+  --text-label: 0.875rem;
+  --text-label--line-height: 1.4;
+  --text-body: 1rem;
+  --text-body--line-height: 1.5;
+  --text-section: 1.25rem;
+  --text-section--line-height: 1.3;
+  --text-page-mobile: 1.75rem;
+  --text-page-mobile--line-height: 1.2;
+  --text-page: 2rem;
+  --text-page--line-height: 1.2;
+  --text-figure: 2rem;
+  --text-figure--line-height: 1.1;
+  --text-display: clamp(2.5rem, 5vw, 4.5rem);
+  --text-display--line-height: 1.05;
+
+  --radius-control: 8px;
+  --radius-card: 12px;
+  --radius-dialog: 16px;
+
+  --shadow-raised: var(--ww-shadow-raised);
+  --shadow-overlay: var(--ww-shadow-overlay);
+
+  --default-transition-duration: 160ms;
+  --default-transition-timing-function: var(--ww-ease);
+
+  /* Legacy customer prototype (/customer) only; not part of the Staff Portal. */
   --color-brand-50: #eef3fb;
   --color-brand-100: #d6e1f3;
   --color-brand-600: #1e3a6e;
@@ -9,32 +113,60 @@
   --color-spark-300: #ffe066;
   --color-spark-400: #ffd21f;
   --color-spark-500: #f5bd00;
-
-  /* Field work (engineer + office): charcoal, white and red */
-  --color-ink-50: #f0f4f2;
-  --color-ink-100: #e6ebea;
-  --color-ink-200: #d6dddd;
-  --color-ink-400: #899596;
-  --color-ink-500: #697778;
-  --color-ink-600: #526566;
-  --color-ink-700: #425459;
-  --color-ink-800: #1f3035;
-  --color-ink-900: #1b2529;
-  --color-ink-950: #17252a;
-  --color-signal-400: #ef5558;
-  --color-signal-500: #e64b4c;
-  --color-signal-600: #cf343d;
-  --color-signal-700: #b62f36;
-  --color-signal-800: #982a31;
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
 }
 
-body {
-  background: #e5e9f0;
-  color: #0f172a;
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background: var(--ww-background);
+    color: var(--ww-text);
+    font-size: 1rem;
+    line-height: 1.5;
+    font-weight: 400;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--ww-focus);
+    outline-offset: 3px;
+  }
+
+  /* The information-blue focus ring lacks contrast on charcoal; use white there. */
+  .surface-ink :focus-visible {
+    outline-color: var(--ww-white);
+  }
 }
 
-.pb-safe {
+@utility pb-safe {
   padding-bottom: env(safe-area-inset-bottom);
+}
+
+@utility pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media print {
+  body {
+    background: var(--ww-white);
+  }
 }

@@ -3,11 +3,12 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { FlaskConical, RotateCcw } from "lucide-react";
+import { MenuDetails, menuItem } from "@/components/portal/Menu";
 
 export type DemoPerson = { id: string; name: string; title: string; role: "engineer" | "office" };
 
 /** Demo-only control: switch person and reset the sample data. */
-export function DemoMenu({ people, currentId, tone = "dark" }: { people: DemoPerson[]; currentId: string; tone?: "dark" | "light" }) {
+export function DemoMenu({ people, currentId, align = "right" }: { people: DemoPerson[]; currentId: string; align?: "right" | "left" }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -18,10 +19,10 @@ export function DemoMenu({ people, currentId, tone = "dark" }: { people: DemoPer
     try {
       const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body ?? {}) });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error ?? "That did not work.");
+      if (!res.ok) throw new Error(data.error ?? "That didn’t work. Try again.");
       return data;
     } catch (err) {
-      setError(err instanceof Error ? err.message : "That did not work.");
+      setError(err instanceof Error ? err.message : "That didn’t work. Try again.");
       return null;
     } finally {
       setBusy(false);
@@ -49,59 +50,63 @@ export function DemoMenu({ people, currentId, tone = "dark" }: { people: DemoPer
   const staff = people.filter((p) => p.role === "engineer");
 
   return (
-    <details className="group relative">
-      <summary
-        className={`flex min-h-9 cursor-pointer list-none items-center gap-1.5 rounded-lg border border-dashed px-2.5 text-xs font-extrabold tracking-wide uppercase [&::-webkit-details-marker]:hidden ${
-          tone === "dark" ? "border-amber-300/70 text-amber-200 hover:bg-white/5" : "border-amber-500 text-amber-800 hover:bg-amber-50"
-        }`}
+    <MenuDetails
+      summaryClassName="inline-flex min-h-12 items-center gap-1.5 rounded-control px-3 text-label font-bold text-warning underline-offset-4 hover:underline"
+      panelClassName={`top-full mt-1 w-72 ${align === "right" ? "right-0" : "left-0"}`}
+      summary={
+        <>
+          <FlaskConical className="size-4" aria-hidden />
+          Demo tools
+        </>
+      }
+    >
+      <p className="px-3 pt-2 pb-1 text-label text-muted">Demonstration only. Sample people and jobs, not real records.</p>
+      <label htmlFor="demo-switch" className="mt-2 block px-3 text-label font-semibold text-ink">
+        View as
+      </label>
+      <select
+        id="demo-switch"
+        className="mx-3 mt-1.5 mb-2 block min-h-12 w-[calc(100%-1.5rem)] rounded-control border border-control bg-surface px-3 text-body"
+        value={currentId}
+        disabled={busy}
+        onChange={(e) => switchTo(e.target.value)}
       >
-        <FlaskConical className="h-3.5 w-3.5" />
-        Demo
-      </summary>
-      <div className="absolute top-full right-0 z-40 mt-2 w-72 rounded-xl border border-ink-100 bg-white p-2 text-ink-950 shadow-xl">
-        <p className="px-3 pt-2 pb-1 text-xs text-ink-500">
-          Demonstration only. Sample people and jobs, not real records.
+        <optgroup label="Office">
+          {office.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.name} · {p.title}
+            </option>
+          ))}
+        </optgroup>
+        <optgroup label="Employees">
+          {staff.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.name} · {p.title}
+            </option>
+          ))}
+        </optgroup>
+      </select>
+      <button type="button" onClick={reset} disabled={busy} className={`${menuItem} text-error disabled:opacity-60`}>
+        <RotateCcw className="size-5" aria-hidden />
+        Reset demo data
+      </button>
+      {error && (
+        <p role="alert" className="px-3 pb-2 text-label font-semibold text-error">
+          {error}
         </p>
-        <label htmlFor="demo-switch" className="mt-2 block px-3 text-xs font-extrabold text-ink-700">
-          View as
-        </label>
-        <select
-          id="demo-switch"
-          className="mx-3 mt-1 mb-2 min-h-11 w-[calc(100%-1.5rem)] rounded-lg border border-ink-200 bg-white px-2 text-sm font-semibold"
-          value={currentId}
-          disabled={busy}
-          onChange={(e) => switchTo(e.target.value)}
-        >
-          <optgroup label="Office">
-            {office.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name} · {p.title}
-              </option>
-            ))}
-          </optgroup>
-          <optgroup label="Employees">
-            {staff.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name} · {p.title}
-              </option>
-            ))}
-          </optgroup>
-        </select>
-        <button
-          type="button"
-          onClick={reset}
-          disabled={busy}
-          className="flex min-h-11 w-full items-center gap-2 rounded-lg px-3 text-left text-sm font-bold text-signal-700 hover:bg-ink-50 disabled:opacity-50"
-        >
-          <RotateCcw className="h-4 w-4" />
-          Reset demo data
-        </button>
-        {error && (
-          <p role="alert" className="px-3 pb-2 text-xs font-bold text-signal-700">
-            {error}
-          </p>
-        )}
+      )}
+    </MenuDetails>
+  );
+}
+
+/** Thin strip that labels sample data and holds the demo tools, kept out of the main header. */
+export function DemoStrip({ people, currentId }: { people: DemoPerson[]; currentId: string }) {
+  return (
+    <div className="border-b border-warning/30 bg-warning-surface text-ink">
+      <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-3 px-4 sm:px-6">
+        <p className="py-1 text-caption font-semibold">Demo: sample people, jobs and times</p>
+        <DemoMenu people={people} currentId={currentId} />
       </div>
-    </details>
+    </div>
   );
 }

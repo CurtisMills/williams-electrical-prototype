@@ -1,10 +1,12 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { DemoMenu } from "@/components/DemoMenu";
+import { Bell } from "lucide-react";
+import { DemoStrip } from "@/components/DemoMenu";
 import { EngineerNav } from "@/components/field/EngineerNav";
 import { OfflineProvider } from "@/components/field/OfflineQueue";
 import { RefreshOnFocus } from "@/components/field/RefreshOnFocus";
-import { DemoBadge, FieldBrand, UserMenu } from "@/components/field/ui";
+import { BrandLockup } from "@/components/portal/brand";
+import { AccountMenu } from "@/components/portal/Menu";
 import { requireRole } from "@/lib/auth/session";
 import { DEMO_MODE, demoPeople } from "@/lib/auth/users";
 import { readStore } from "@/lib/we/store";
@@ -17,30 +19,43 @@ export default async function EngineerAppLayout({ children }: { children: ReactN
   return (
     <OfflineProvider userId={user.id}>
       <RefreshOnFocus />
-      <header className="sticky top-0 z-20 border-b-[3px] border-signal-600 bg-ink-900 pt-[env(safe-area-inset-top)] text-white">
-        <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-2 sm:px-6">
-          <Link href="/field" aria-label="Williams Electrical, today" className="min-w-0">
-            <FieldBrand className="h-12 w-auto sm:h-14" />
+      <a href="#main" className="sr-only z-50 rounded-control bg-surface px-4 py-3 font-bold text-ink focus:not-sr-only focus:fixed focus:top-2 focus:left-2">
+        Skip to content
+      </a>
+      <header className="surface-ink sticky top-0 z-30 bg-ink pt-safe text-white">
+        <div className="mx-auto flex min-h-16 max-w-3xl items-center justify-between gap-2 px-3 sm:px-5">
+          <Link href="/field" className="min-w-0 rounded-control py-1" aria-label="Williams Electrical Staff Portal, Today">
+            <BrandLockup />
           </Link>
           <div className="hidden md:block">
-            <EngineerNav variant="top" unread={unread} />
+            <EngineerNav variant="top" />
           </div>
-          <div className="flex items-center gap-2">
-            {DEMO_MODE && <DemoMenu people={demoPeople()} currentId={user.id} />}
-            <UserMenu name={user.name} title={user.title} initials={user.initials} portal="field" />
+          <div className="flex shrink-0 items-center">
+            <Link
+              href="/field/notifications"
+              aria-label={unread ? `Updates, ${unread} unread` : "Updates"}
+              className="relative flex min-h-12 min-w-12 flex-col items-center justify-center gap-0.5 rounded-control px-2 text-caption font-semibold text-white hover:bg-white/10"
+            >
+              <Bell className="size-5" aria-hidden />
+              <span aria-hidden>Updates</span>
+              {unread > 0 && (
+                <span aria-hidden className="absolute top-0.5 right-0.5 grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1 text-caption leading-none font-bold text-white">
+                  {unread}
+                </span>
+              )}
+            </Link>
+            <AccountMenu name={user.name} title={user.title} initials={user.initials} portal="field" />
           </div>
         </div>
-        {DEMO_MODE && (
-          <div className="flex items-center justify-center gap-2 bg-amber-300 px-4 py-0.5 text-[11px] font-bold text-ink-950">
-            <DemoBadge /> Sample people, jobs and times for demonstration
-          </div>
-        )}
       </header>
+      {DEMO_MODE && <DemoStrip people={demoPeople()} currentId={user.id} />}
 
-      <main className="mx-auto w-full max-w-xl px-4 pt-5 pb-28 sm:px-5 md:pb-12">{children}</main>
+      <main id="main" className="mx-auto w-full max-w-xl px-4 pt-6 pb-[calc(6rem+env(safe-area-inset-bottom))] sm:px-5 md:pb-12">
+        {children}
+      </main>
 
       <div className="md:hidden">
-        <EngineerNav variant="bottom" unread={unread} />
+        <EngineerNav variant="bottom" />
       </div>
     </OfflineProvider>
   );

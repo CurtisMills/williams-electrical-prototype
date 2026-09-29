@@ -44,8 +44,8 @@ export default async function RecordPage(props: PageProps<"/office/records/[id]"
         overline={`RECORD ${s.id}`}
         title={`${employee.name}, ${formatDayKey(dateKeyOf(s.startedAt), "long")}`}
         aside={
-          <Link href={`/office/history?employee=${employee.id}`} className="text-sm font-bold text-signal-700">
-            ← {employee.name}’s history
+          <Link href={`/office/history?employee=${employee.id}`} className="inline-flex min-h-12 items-center text-label font-bold text-primary hover:underline">
+            {employee.name}’s history
           </Link>
         }
       />
@@ -54,51 +54,51 @@ export default async function RecordPage(props: PageProps<"/office/records/[id]"
         <Card title="What’s recorded" className="lg:col-span-2">
           <dl className="grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
             <div>
-              <dt className="text-xs font-extrabold text-ink-500 uppercase">Job</dt>
+              <dt className="text-xs font-bold text-muted">Job</dt>
               <dd className="font-bold">{job ? `${job.ref} · ${job.title}` : `${activityLabel[s.activity]}${s.note ? `: ${s.note}` : ""}`}</dd>
-              {site && <dd className="text-ink-600">{l.customer(job?.customerId)?.name} · {site.name}, {site.address}</dd>}
+              {site && <dd className="text-muted">{l.customer(job?.customerId)?.name} · {site.name}, {site.address}</dd>}
             </div>
             <div>
-              <dt className="text-xs font-extrabold text-ink-500 uppercase">Times</dt>
-              <dd className="font-mono font-bold">
+              <dt className="text-xs font-bold text-muted">Times</dt>
+              <dd className="tabular-nums font-bold">
                 {formatClock(s.startedAt)}–{s.finishedAt ? formatClock(s.finishedAt) : "no finish yet"}
                 {s.finishedAt && dateKeyOf(s.finishedAt) !== dateKeyOf(s.startedAt) && " (next day)"}
               </dd>
-              <dd className="text-ink-600">
+              <dd className="text-muted">
                 {Math.round(breakMinutes(s))} min break · {s.finishedAt ? `${formatDuration(netMinutes(s))} worked` : "excluded from totals until finished"}
               </dd>
               {s.finishedAt && dailySplit(s).length > 1 && (
-                <dd className="text-xs text-ink-500">
+                <dd className="text-xs text-muted">
                   Split at midnight: {dailySplit(s).map((d) => `${formatDayKey(d.date, "dm")} ${formatDuration(d.netMinutes)}`).join(", ")}
                 </dd>
               )}
             </div>
             <div>
-              <dt className="text-xs font-extrabold text-ink-500 uppercase">Source</dt>
+              <dt className="text-xs font-bold text-muted">Source</dt>
               <dd>{s.source === "phone" ? "Employee’s phone" : s.source === "phone_offline" ? "Employee’s phone, sent after reconnecting" : s.source === "office" ? "Entered by the office" : "Demo data"}</dd>
-              <dd className="text-xs text-ink-500">First received {formatWhen(s.receivedAt)} · last update {formatWhen(s.lastEventAt)}</dd>
+              <dd className="text-xs text-muted">First received {formatWhen(s.receivedAt)} · last update {formatWhen(s.lastEventAt)}</dd>
             </div>
             <div>
-              <dt className="text-xs font-extrabold text-ink-500 uppercase">Timesheet</dt>
+              <dt className="text-xs font-bold text-muted">Timesheet</dt>
               <dd className="flex items-center gap-2">
                 <TimesheetPill status={sheet.status} />
-                <Link href={`/office/timesheets/${employee.id}?week=${week}`} className="text-sm font-bold text-signal-700">
+                <Link href={`/office/timesheets/${employee.id}?week=${week}`} className="inline-flex min-h-12 items-center text-label font-bold text-primary hover:underline">
                   Week of {formatDayKey(week, "dm")}
                 </Link>
               </dd>
-              {sheet.status === "approved" && <dd className="text-xs text-amber-800">Correcting this reopens the approved week for review.</dd>}
+              {sheet.status === "approved" && <dd className="text-xs text-warning">Correcting this reopens the approved week for review.</dd>}
             </div>
           </dl>
           {s.original && (
-            <p className="mt-4 rounded-lg bg-ink-50 p-3 text-sm">
+            <p className="mt-4 rounded-control bg-subtle p-3 text-sm">
               <span className="font-bold">Originally recorded:</span> {describe(s.original)}
             </p>
           )}
-          {s.voided && <p className="mt-4 rounded-lg bg-signal-600/10 p-3 text-sm font-bold text-signal-800">This record has been removed and is excluded from all hours.</p>}
+          {s.voided && <p className="mt-4 rounded-control bg-warning-surface p-3 text-sm font-bold text-warning">This record has been removed and is excluded from all hours.</p>}
           {pending.map((c) => (
-            <p key={c.id} className="mt-4 rounded-lg bg-sky-50 p-3 text-sm">
+            <p key={c.id} className="mt-4 rounded-control bg-info-surface p-3 text-sm">
               <span className="font-bold">{c.provisional ? "Employee added the finish:" : "Employee asks for:"}</span> {c.proposed.start}–{c.proposed.finish}, {c.proposed.breakMinutes} min break. “{c.reason}”{" "}
-              <Link href={`/office/exceptions#${c.id}`} className="font-bold text-signal-700">
+              <Link href={`/office/exceptions#${c.id}`} className="font-bold text-primary">
                 Review
               </Link>
             </p>
@@ -107,15 +107,15 @@ export default async function RecordPage(props: PageProps<"/office/records/[id]"
 
         <Card title="Phone taps received">
           {events.length === 0 ? (
-            <p className="text-sm text-ink-500">No phone events (entered by the office or demo data).</p>
+            <p className="text-sm text-muted">No phone events (entered by the office or demo data).</p>
           ) : (
             <ol className="space-y-2 text-sm">
               {events.map((e) => (
-                <li key={e.id} className="border-l-2 border-ink-100 pl-3">
+                <li key={e.id} className="border-l-2 border-line pl-3">
                   <span className="font-bold capitalize">{e.type}</span> at {formatClock(e.occurredAt)}
-                  {e.offline && <span className="text-ink-500"> · received {formatWhen(e.receivedAt)}</span>}
+                  {e.offline && <span className="text-muted"> · received {formatWhen(e.receivedAt)}</span>}
                   {e.outcome === "conflict" && <Pill tone="red">Clash</Pill>}
-                  <span className="block text-xs text-ink-500">{e.detail}</span>
+                  <span className="block text-xs text-muted">{e.detail}</span>
                 </li>
               ))}
             </ol>
@@ -146,11 +146,11 @@ export default async function RecordPage(props: PageProps<"/office/records/[id]"
 
       <Card title="Change history" className="mt-6" aside="Who changed what, when and why">
         {trail.length === 0 ? (
-          <p className="text-sm text-ink-500">Not changed since it was recorded.</p>
+          <p className="text-sm text-muted">Not changed since it was recorded.</p>
         ) : (
-          <div className="-mx-5 -my-5 overflow-x-auto">
+          <div className="-mx-5 -my-5 relative overflow-x-auto">
             <table className="w-full min-w-[720px] text-sm">
-              <thead className="border-b border-ink-100 bg-ink-50/60">
+              <thead className="border-b border-line bg-subtle">
                 <tr>
                   <th className={th}>When</th>
                   <th className={th}>Who</th>
@@ -160,7 +160,7 @@ export default async function RecordPage(props: PageProps<"/office/records/[id]"
                   <th className={th}>Reason</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-ink-50">
+              <tbody className="divide-y divide-line">
                 {trail.map((a) => (
                   <tr key={a.id}>
                     <td className={`${td} whitespace-nowrap`}>{formatWhen(a.at)}</td>

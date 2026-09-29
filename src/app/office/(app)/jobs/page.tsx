@@ -12,7 +12,7 @@ import { JobForm, JobStatusControl, SiteForm } from "./JobForms";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Jobs and sites" };
 
-const tone = { confirmed: "green", tentative: "amber", completed: "blue", cancelled: "red", archived: "grey" } as const;
+const tone = { confirmed: "green", tentative: "amber", completed: "blue", cancelled: "grey", archived: "grey" } as const;
 
 export default async function JobsPage() {
   await requireRole("office");
@@ -25,43 +25,45 @@ export default async function JobsPage() {
 
   return (
     <>
-      <PageHeader overline="OFFICE" title="Jobs and sites">
+      <PageHeader overline="Office" title="Jobs and sites">
         Tentative jobs appear only in the planning preview. Cancelled and archived jobs keep their history but can’t take new time or assignments.
       </PageHeader>
 
       <Card title={`Jobs (${jobs.length})`}>
-        <div className="-mx-5 -my-5 overflow-x-auto">
+        <div className="-mx-5 -my-5 relative overflow-x-auto">
           <table className="w-full min-w-[980px] text-sm">
-            <thead className="border-b border-ink-100 bg-ink-50/60">
+            <thead className="border-b border-line bg-subtle">
               <tr>
                 <th className={th}>Job</th>
                 <th className={th}>Customer · site</th>
                 <th className={th}>Dates</th>
                 <th className={th}>Hours</th>
                 <th className={th}>Status</th>
-                <th className={th}></th>
+                <th className={th}>
+                  <span className="sr-only">Links</span>
+                </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-ink-50">
+            <tbody className="divide-y divide-line">
               {jobs.map((j) => {
                 const site = store.sites.find((s) => s.id === j.siteId);
                 return (
                   <tr key={j.id}>
                     <td className={td}>
-                      <span className="font-mono text-xs font-bold">{j.ref}</span>
+                      <span className="text-xs font-bold text-muted tabular-nums">{j.ref}</span>
                       <span className="block font-bold">{j.title}</span>
-                      <span className="text-xs text-ink-500">{j.type}</span>
+                      <span className="text-xs text-muted">{j.type}</span>
                     </td>
                     <td className={td}>
                       {store.customers.find((c) => c.id === j.customerId)?.name}
-                      <span className="block text-xs text-ink-500">{site?.name}</span>
+                      <span className="block text-xs text-muted">{site?.name}</span>
                     </td>
                     <td className={`${td} whitespace-nowrap`}>
                       {formatDayKey(j.startDate, "dm")} – {formatDayKey(j.endDate, "dm")}
                     </td>
                     <td className={`${td} whitespace-nowrap`}>
-                      <span className="font-mono">{formatDuration(recorded(j.id))}</span>
-                      <span className="block text-xs text-ink-500">of {j.plannedHours}h planned</span>
+                      <span className="tabular-nums">{formatDuration(recorded(j.id))}</span>
+                      <span className="block text-xs text-muted">of {j.plannedHours}h planned</span>
                     </td>
                     <td className={td}>
                       <Pill tone={tone[j.status]}>{jobStatusLabel[j.status]}</Pill>
@@ -70,11 +72,11 @@ export default async function JobsPage() {
                       </div>
                     </td>
                     <td className={td}>
-                      <span className="flex flex-col gap-1">
-                        <Link href={`/office/planning/jobs/${j.id}`} className="font-extrabold text-signal-700 hover:underline">
+                      <span className="flex flex-col">
+                        <Link href={`/office/planning/jobs/${j.id}`} className="inline-flex min-h-12 items-center font-bold text-primary hover:underline">
                           Staffing
                         </Link>
-                        <Link href={`/office/history?job=${j.id}&from=${j.startDate}`} className="text-xs font-bold text-ink-600 hover:underline">
+                        <Link href={`/office/history?job=${j.id}&from=${j.startDate}`} className="inline-flex min-h-12 items-center text-label font-bold text-primary hover:underline">
                           Work history
                         </Link>
                       </span>
@@ -99,17 +101,17 @@ export default async function JobsPage() {
       <Card title={`Sites (${store.sites.length})`} className="mt-6" aside="Access notes are shown to employees on their job cards">
         <ul className="grid gap-3 md:grid-cols-2">
           {store.sites.map((s) => (
-            <li key={s.id} className="rounded-xl border border-ink-100 p-3 text-sm">
+            <li key={s.id} className="rounded-card border border-line p-4 text-sm">
               <p className="font-bold">
-                {s.name} <span className="font-normal text-ink-500">· {store.customers.find((c) => c.id === s.customerId)?.name}</span>
+                {s.name} <span className="font-normal text-muted">· {store.customers.find((c) => c.id === s.customerId)?.name}</span>
               </p>
-              <p className="text-ink-600">{s.address}</p>
+              <p className="text-muted">{s.address}</p>
               {s.contactName && (
-                <p className="text-ink-600">
+                <p className="text-muted">
                   Contact: {s.contactName} {s.contactPhone}
                 </p>
               )}
-              {s.access && <p className="mt-1 rounded bg-ink-50 p-2 text-ink-700">Access: {s.access}</p>}
+              {s.access && <p className="mt-2 rounded-control bg-subtle p-2 text-ink">Access: {s.access}</p>}
             </li>
           ))}
         </ul>

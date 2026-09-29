@@ -166,7 +166,7 @@ export function OfflineProvider({ userId, children }: { userId: string; children
     }
     try {
       const result = await post(event);
-      if (!result.ok) return { status: "error", message: result.data.error ?? "Not saved. Please try again." };
+      if (!result.ok) return { status: "error", message: result.data.error ?? "Nothing was recorded. Try again." };
       router.refresh();
       return { status: "saved", message: result.data.message ?? "Saved." };
     } catch {

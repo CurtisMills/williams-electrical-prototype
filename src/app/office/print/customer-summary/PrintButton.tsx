@@ -9,7 +9,7 @@ export function PrintButton({ filter }: { filter: Record<string, string | undefi
     <div className="mt-8 flex items-center gap-3 print:hidden">
       <button
         type="button"
-        className="min-h-11 rounded-lg bg-ink-900 px-5 text-sm font-extrabold text-white"
+        className="min-h-12 rounded-control bg-ink px-5 text-label font-bold text-white"
         onClick={async () => {
           setError(null);
           if (!ref) {
@@ -23,8 +23,8 @@ export function PrintButton({ filter }: { filter: Record<string, string | undefi
       >
         Print or save as PDF
       </button>
-      {ref && <span className="text-sm text-ink-600">Logged as {ref}</span>}
-      {error && <span className="text-sm font-bold text-signal-700">{error}</span>}
+      {ref && <span className="text-sm text-muted">Logged as {ref}</span>}
+      {error && <span className="text-sm font-bold text-error">{error}</span>}
     </div>
   );
 }

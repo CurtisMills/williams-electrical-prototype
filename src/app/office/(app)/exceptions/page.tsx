@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ActionButton, ReasonAction } from "@/components/office/actions";
+import { buttonClass } from "@/components/portal/button";
 import { Card, Empty, PageHeader } from "@/components/office/kit";
 import { Pill } from "@/components/field/ui";
 import { requireRole } from "@/lib/auth/session";
@@ -12,7 +13,7 @@ import { activityLabel } from "@/lib/we/work";
 import { SettingsForm } from "./SettingsForm";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "Exceptions" };
+export const metadata: Metadata = { title: "Needs attention" };
 
 const groups: { title: string; kinds: ExceptionKind[]; blurb: string }[] = [
   { title: "Time records", kinds: ["missing_finish", "no_start", "phone_conflict", "overlap", "unassigned_work", "long_session"], blurb: "Records that are incomplete, unusual or clash." },
@@ -40,26 +41,27 @@ export default async function ExceptionsPage(props: PageProps<"/office/exception
 
   return (
     <>
-      <PageHeader overline="OFFICE" title="Exceptions">
+      <PageHeader overline="Time records" title="Needs attention">
         Everything that needs a person to look at it. Each item says what’s wrong and what to do. Items disappear once they’re resolved.
       </PageHeader>
 
       <div className="mb-5 flex flex-wrap gap-2">
-        <Link href="/office/exceptions" className={`rounded-full px-3 py-1.5 text-sm font-bold ${!kind ? "bg-ink-900 text-white" : "border border-ink-200 bg-white"}`}>
+        <Link href="/office/exceptions" aria-current={!kind ? "page" : undefined} className={`inline-flex min-h-12 items-center rounded-control px-4 text-label font-bold ${!kind ? "bg-ink text-white" : "border border-control bg-surface hover:bg-subtle"}`}>
           All ({all.length})
         </Link>
         {[...counts.entries()].map(([k, n]) => (
           <Link
             key={k}
             href={`/office/exceptions?kind=${k}`}
-            className={`rounded-full px-3 py-1.5 text-sm font-bold ${kind === k ? "bg-ink-900 text-white" : "border border-ink-200 bg-white"}`}
+            aria-current={kind === k ? "page" : undefined}
+            className={`inline-flex min-h-12 items-center rounded-control px-4 text-label font-bold ${kind === k ? "bg-ink text-white" : "border border-control bg-surface hover:bg-subtle"}`}
           >
             {exceptionKindLabel[k]} ({n})
           </Link>
         ))}
       </div>
 
-      {items.length === 0 && <Empty>Nothing needs attention. Well done.</Empty>}
+      {items.length === 0 && <Empty>Nothing needs attention.</Empty>}
 
       <div className="space-y-6">
         {groups.map((g) => {
@@ -67,7 +69,7 @@ export default async function ExceptionsPage(props: PageProps<"/office/exception
           if (!list.length) return null;
           return (
             <Card key={g.title} title={g.title} aside={g.blurb}>
-              <ul className="divide-y divide-ink-50">
+              <ul className="divide-y divide-line">
                 {list.map((i) => {
                   const c = i.kind === "correction" ? correctionFor(i.id) : undefined;
                   const e = i.kind === "phone_conflict" ? eventFor(i.id) : undefined;
@@ -77,19 +79,19 @@ export default async function ExceptionsPage(props: PageProps<"/office/exception
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div className="min-w-0 flex-1">
                           <div className="mb-1 flex flex-wrap items-center gap-2">
-                            <Pill tone={i.kind === "no_start" ? "amber" : i.kind === "timesheet_review" || i.kind === "correction" ? "blue" : i.kind === "unfilled" || i.kind === "needs_replacement" ? "violet" : "red"}>
+                            <Pill tone={i.kind === "phone_conflict" || i.kind === "overlap" ? "red" : i.kind === "timesheet_review" || i.kind === "correction" ? "blue" : "amber"}>
                               {exceptionKindLabel[i.kind]}
                             </Pill>
-                            <span className="text-xs text-ink-500">{formatDayKey(i.date, "short")}</span>
+                            <span className="text-xs text-muted">{formatDayKey(i.date, "short")}</span>
                           </div>
                           <p className="font-bold">{i.title}</p>
-                          <p className="text-sm text-ink-600">{i.detail}</p>
+                          <p className="text-sm text-muted">{i.detail}</p>
 
                           {c && (
                             <div className="mt-2 grid max-w-2xl gap-2 text-sm sm:grid-cols-2">
                               {s && (
-                                <div className="rounded-lg border border-ink-100 bg-ink-50/60 p-2.5">
-                                  <p className="text-xs font-extrabold text-ink-500 uppercase">{c.provisional ? "Before employee’s change" : "Recorded now"}</p>
+                                <div className="rounded-control border border-line bg-subtle p-2.5">
+                                  <p className="text-xs font-bold text-muted">{c.provisional ? "Before employee’s change" : "Recorded now"}</p>
                                   {c.provisional && s.original ? (
                                     <p>
                                       {formatClock(s.original.startedAt)}–{s.original.finishedAt ? formatClock(s.original.finishedAt) : "no finish"} · {s.original.breakMinutes} min break
@@ -99,15 +101,15 @@ export default async function ExceptionsPage(props: PageProps<"/office/exception
                                       {formatClock(s.startedAt)}–{s.finishedAt ? formatClock(s.finishedAt) : "no finish"} · {breakMinutes(s)} min break
                                     </p>
                                   )}
-                                  <p className="text-ink-600">{jobLabel(s.original?.jobId ?? s.jobId, s.original?.activity ?? s.activity)}</p>
+                                  <p className="text-muted">{jobLabel(s.original?.jobId ?? s.jobId, s.original?.activity ?? s.activity)}</p>
                                 </div>
                               )}
-                              <div className="rounded-lg border border-blue-200 bg-sky-50 p-2.5">
-                                <p className="text-xs font-extrabold text-sky-800 uppercase">{c.provisional ? "Employee’s finish (already applied)" : s ? "Employee asks for" : "Employee says they worked"}</p>
+                              <div className="rounded-control border border-info/40 bg-info-surface p-2.5">
+                                <p className="text-xs font-bold text-info">{c.provisional ? "Employee’s finish (already applied)" : s ? "Employee asks for" : "Employee says they worked"}</p>
                                 <p>
                                   {c.proposed.start}–{c.proposed.finish} · {c.proposed.breakMinutes} min break
                                 </p>
-                                <p className="text-ink-600">{jobLabel(c.proposed.jobId, c.proposed.activity)}</p>
+                                <p className="text-muted">{jobLabel(c.proposed.jobId, c.proposed.activity)}</p>
                               </div>
                             </div>
                           )}
@@ -127,7 +129,7 @@ export default async function ExceptionsPage(props: PageProps<"/office/exception
                                 reasonLabel="Tell the employee why"
                               />
                               {s && (
-                                <Link href={`/office/records/${s.id}`} className="inline-flex min-h-10 items-center px-2 text-sm font-extrabold text-signal-700">
+                                <Link href={`/office/records/${s.id}`} className={buttonClass({ variant: "quiet" })}>
                                   Edit instead
                                 </Link>
                               )}
@@ -141,14 +143,14 @@ export default async function ExceptionsPage(props: PageProps<"/office/exception
                               placeholder="e.g. Checked with Jordan, finish time corrected on the record"
                             />
                           ) : (
-                            <Link href={i.href} className="inline-flex min-h-10 items-center rounded-lg bg-ink-900 px-4 text-sm font-extrabold text-white hover:bg-ink-800">
+                            <Link href={i.href} className={buttonClass({ variant: "secondary" })}>
                               {i.action}
                             </Link>
                           )}
                         </div>
                       </div>
                       {e && (
-                        <p className="mt-1 text-xs text-ink-500">
+                        <p className="mt-1 text-xs text-muted">
                           Tapped {formatWhen(e.occurredAt)}, received {formatWhen(e.receivedAt)}. Nothing was changed automatically.
                         </p>
                       )}
@@ -161,7 +163,7 @@ export default async function ExceptionsPage(props: PageProps<"/office/exception
         })}
       </div>
 
-      <Card title="Warning settings" className="mt-8" aside="Company defaults for this demo">
+      <Card id="settings" title="Settings" className="mt-8" aside="When the portal raises a warning. Company defaults for this demo.">
         <SettingsForm longSessionHours={store.settings.longSessionHours} noStartGraceMinutes={store.settings.noStartGraceMinutes} />
       </Card>
     </>

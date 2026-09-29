@@ -106,14 +106,14 @@ export function selectableJobs(store: WeStore) {
 
 export type TeamStatus = "working" | "on_break" | "finished" | "on_leave" | "no_start" | "due_later" | "not_scheduled";
 
-export const teamStatusMeta: Record<TeamStatus, { label: string; order: number; tone: string }> = {
-  working: { label: "Working", order: 1, tone: "bg-emerald-50 text-emerald-800 ring-emerald-200" },
-  on_break: { label: "On a recorded break", order: 2, tone: "bg-sky-50 text-sky-800 ring-sky-200" },
-  no_start: { label: "No start recorded", order: 0, tone: "bg-amber-50 text-amber-900 ring-amber-300" },
-  due_later: { label: "Due later today", order: 3, tone: "bg-ink-50 text-ink-700 ring-ink-200" },
-  finished: { label: "Recorded finished", order: 4, tone: "bg-ink-800 text-white ring-ink-800" },
-  on_leave: { label: "On approved leave", order: 5, tone: "bg-violet-50 text-violet-800 ring-violet-200" },
-  not_scheduled: { label: "Not scheduled", order: 6, tone: "bg-white text-ink-500 ring-ink-200" },
+export const teamStatusMeta: Record<TeamStatus, { label: string; order: number }> = {
+  working: { label: "Working", order: 1 },
+  on_break: { label: "On a break", order: 2 },
+  no_start: { label: "No start recorded", order: 0 },
+  due_later: { label: "Due to start", order: 3 },
+  finished: { label: "Finished", order: 4 },
+  on_leave: { label: "On holiday", order: 5 },
+  not_scheduled: { label: "Not scheduled", order: 6 },
 };
 
 export function teamToday(store: WeStore, now = new Date()) {

@@ -21,8 +21,8 @@ export async function POST(request: Request) {
       {
         error:
           user.role === "engineer"
-            ? "This is an engineer account. Sign in through the field app."
-            : "This is an office account. Sign in through the office portal.",
+            ? "This is an employee account. Use “Sign in as an employee” below."
+            : "This is an office account. Use “Sign in to Office” below.",
       },
       { status: 403 },
     );

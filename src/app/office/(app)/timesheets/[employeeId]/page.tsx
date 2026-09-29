@@ -4,7 +4,7 @@ import { Fragment } from "react";
 import { notFound } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { ActionButton, ReasonAction } from "@/components/office/actions";
-import { Card, PageHeader, td, th } from "@/components/office/kit";
+import { Card, PageHeader, Stat, td, th } from "@/components/office/kit";
 import { Pill, TimesheetPill } from "@/components/field/ui";
 import { requireRole } from "@/lib/auth/session";
 import { addDays, dateKeyOf, formatClock, formatDateRange, formatDayKey, formatDuration, formatWhen, isDateKey, todayKey, weekStartOf } from "@/lib/field/dates";
@@ -34,18 +34,18 @@ export default async function EmployeeTimesheetPage(props: PageProps<"/office/ti
   return (
     <>
       <PageHeader
-        overline="TIMESHEET"
+        overline="Timesheet"
         title={`${employee.name}, ${formatDateRange(week, s.weekEnd)}`}
         aside={
           <>
-            <Link href={`/office/timesheets/${employeeId}?week=${addDays(week, -7)}`} className="grid h-10 w-10 place-items-center rounded-lg border border-ink-200 bg-white" aria-label="Previous week">
-              <ChevronLeft className="h-4 w-4" />
+            <Link href={`/office/timesheets/${employeeId}?week=${addDays(week, -7)}`} className="grid size-12 place-items-center rounded-control border border-line bg-surface" aria-label="Previous week">
+              <ChevronLeft className="size-5" aria-hidden />
             </Link>
-            <Link href={`/office/timesheets/${employeeId}?week=${addDays(week, 7)}`} className="grid h-10 w-10 place-items-center rounded-lg border border-ink-200 bg-white" aria-label="Next week">
-              <ChevronRight className="h-4 w-4" />
+            <Link href={`/office/timesheets/${employeeId}?week=${addDays(week, 7)}`} className="grid size-12 place-items-center rounded-control border border-line bg-surface" aria-label="Next week">
+              <ChevronRight className="size-5" aria-hidden />
             </Link>
-            <Link href={`/office/timesheets?week=${week}`} className="text-sm font-bold text-signal-700">
-              ← All timesheets
+            <Link href={`/office/timesheets?week=${week}`} className="inline-flex min-h-12 items-center text-label font-bold text-primary hover:underline">
+              All timesheets
             </Link>
           </>
         }
@@ -56,40 +56,24 @@ export default async function EmployeeTimesheetPage(props: PageProps<"/office/ti
         </span>
       </PageHeader>
 
-      <div className="mb-6 grid gap-3 sm:grid-cols-4">
-        <div className="rounded-xl bg-ink-900 p-4 text-white">
-          <p className="text-xs font-bold text-ink-300">Total</p>
-          <p className="text-2xl font-extrabold">{formatDuration(s.totalMinutes)}</p>
-        </div>
-        <div className="rounded-xl border border-ink-100 bg-white p-4">
-          <p className="text-xs font-bold text-ink-500">On jobs / travel and other</p>
-          <p className="text-lg font-extrabold">
-            {formatDuration(s.jobMinutes)} / {formatDuration(s.otherMinutes)}
-          </p>
-        </div>
-        <div className="rounded-xl border border-ink-100 bg-white p-4">
-          <p className="text-xs font-bold text-ink-500">Previous week</p>
-          <p className="text-lg font-extrabold">{formatDuration(s.previousWeekMinutes)}</p>
-          {s.previousWeekMinutes > 0 && (
-            <p className="text-xs text-ink-600">
-              {diff >= 0 ? "+" : "−"}
-              {formatDuration(Math.abs(diff))} this week
-            </p>
-          )}
-        </div>
-        <div className="rounded-xl border border-ink-100 bg-white p-4">
-          <p className="text-xs font-bold text-ink-500">Leave</p>
-          <p className="text-lg font-extrabold">{s.leaveDays ? `${s.leaveDays} day${s.leaveDays === 1 ? "" : "s"}` : "None"}</p>
-        </div>
+      <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <Stat label="Total recorded" value={formatDuration(s.totalMinutes)} />
+        <Stat label="On jobs" value={formatDuration(s.jobMinutes)} note={`${formatDuration(s.otherMinutes)} travel and other`} />
+        <Stat
+          label="Previous week"
+          value={formatDuration(s.previousWeekMinutes)}
+          note={s.previousWeekMinutes > 0 ? `${diff >= 0 ? "+" : "−"}${formatDuration(Math.abs(diff))} this week` : undefined}
+        />
+        <Stat label="Holiday" value={s.leaveDays ? `${s.leaveDays} day${s.leaveDays === 1 ? "" : "s"}` : "None"} />
       </div>
 
       {sheet.reopenedReason && sheet.revision > 1 && sheet.status !== "approved" && (
-        <p className="mb-4 rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950">
+        <p className="mb-4 rounded-card border border-warning/40 bg-warning-surface p-3 text-sm text-warning">
           <span className="font-bold">Reopened after approval:</span> {sheet.reopenedReason}. Exports that used the earlier revision are marked superseded.
         </p>
       )}
       {s.openSessions.length > 0 && (
-        <p className="mb-4 rounded-xl bg-signal-600/10 p-3 text-sm font-bold text-signal-800">
+        <p className="mb-4 rounded-card bg-warning-surface p-3 text-sm font-bold text-warning">
           {s.openSessions.length} record(s) have no finish time.{" "}
           {s.openSessions.map((o) => (
             <Link key={o.id} href={`/office/records/${o.id}`} className="underline">
@@ -100,9 +84,9 @@ export default async function EmployeeTimesheetPage(props: PageProps<"/office/ti
       )}
 
       <Card title="Recorded sessions">
-        <div className="-mx-5 -my-5 overflow-x-auto">
+        <div className="-mx-5 -my-5 relative overflow-x-auto">
           <table className="w-full min-w-[820px] text-sm">
-            <thead className="border-b border-ink-100 bg-ink-50/60">
+            <thead className="border-b border-line bg-subtle">
               <tr>
                 <th className={th}>Day</th>
                 <th className={th}>Job / activity</th>
@@ -112,7 +96,7 @@ export default async function EmployeeTimesheetPage(props: PageProps<"/office/ti
                 <th className={th}></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-ink-50">
+            <tbody className="divide-y divide-line">
               {s.days.map((d) => (
                 <Fragment key={d.date}>
                   {d.lines.length === 0 ? (
@@ -124,7 +108,7 @@ export default async function EmployeeTimesheetPage(props: PageProps<"/office/ti
                         ) : d.unavailable ? (
                           <Pill tone="grey">{d.unavailable}</Pill>
                         ) : (
-                          <span className="text-ink-400">Nothing recorded</span>
+                          <span className="text-muted">Nothing recorded</span>
                         )}
                       </td>
                     </tr>
@@ -137,7 +121,7 @@ export default async function EmployeeTimesheetPage(props: PageProps<"/office/ti
                             {i === 0 && formatDayKey(d.date, "short")}
                             {i === 0 && d.leave && (
                               <span className="block">
-                                <Pill tone="violet">Leave {portionLabel[d.leave.portion].toLowerCase()}</Pill>
+                                <Pill tone="violet">Holiday {portionLabel[d.leave.portion].toLowerCase()}</Pill>
                               </span>
                             )}
                           </td>
@@ -145,14 +129,14 @@ export default async function EmployeeTimesheetPage(props: PageProps<"/office/ti
                             {job ? `${job.ref} · ${job.title}` : `${activityLabel[line.session.activity]}${line.session.note ? `: ${line.session.note}` : ""}`}
                             {line.session.edited && <span className="ml-1"><Pill tone="grey">Corrected</Pill></span>}
                           </td>
-                          <td className={`${td} font-mono whitespace-nowrap`}>
+                          <td className={`${td} tabular-nums whitespace-nowrap`}>
                             {formatClock(line.session.startedAt)}–{formatClock(line.session.finishedAt!)}
-                            {dateKeyOf(line.session.startedAt) !== dateKeyOf(line.session.finishedAt!) && <span className="block font-sans text-xs text-ink-500">split at midnight</span>}
+                            {dateKeyOf(line.session.startedAt) !== dateKeyOf(line.session.finishedAt!) && <span className="block font-sans text-xs text-muted">split at midnight</span>}
                           </td>
-                          <td className={`${td} font-mono`}>{Math.round(line.breakMinutes)}m</td>
-                          <td className={`${td} font-mono font-bold`}>{formatDuration(line.netMinutes)}</td>
+                          <td className={`${td} tabular-nums`}>{Math.round(line.breakMinutes)}m</td>
+                          <td className={`${td} tabular-nums font-bold`}>{formatDuration(line.netMinutes)}</td>
                           <td className={td}>
-                            <Link href={`/office/records/${line.session.id}`} className="font-bold text-signal-700 hover:underline">
+                            <Link href={`/office/records/${line.session.id}`} className="font-bold text-primary hover:underline">
                               Open
                             </Link>
                           </td>
@@ -191,18 +175,18 @@ export default async function EmployeeTimesheetPage(props: PageProps<"/office/ti
             reopens it.
           </p>
         ) : (
-          <p className="text-sm text-ink-600">
+          <p className="text-sm text-muted">
             {sheet.status === "draft" ? "Not submitted by the employee yet." : `Sent back to ${employee.name.split(" ")[0]}: “${sheet.returnReason}”`}
           </p>
         )}
         {sheet.history.length > 0 && (
           <>
-            <h3 className="mt-5 mb-2 text-sm font-extrabold">History</h3>
-            <ol className="space-y-1 border-l-2 border-ink-100 pl-3 text-sm">
+            <h3 className="mt-5 mb-2 text-sm font-bold">History</h3>
+            <ol className="space-y-1 border-l-2 border-line pl-3 text-sm">
               {sheet.history.map((h, i) => (
                 <li key={i}>
                   <span className="font-bold capitalize">{h.action.replace("_", " ")}</span> · revision {h.revision} · {names.get(h.by) ?? h.by} · {formatWhen(h.at)}
-                  {h.reason && <span className="text-ink-600"> · “{h.reason}”</span>}
+                  {h.reason && <span className="text-muted"> · “{h.reason}”</span>}
                 </li>
               ))}
             </ol>

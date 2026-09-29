@@ -1,12 +1,32 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { Loader2 } from "lucide-react";
-import { Notice } from "@/components/field/ui";
+import { Button, type ButtonVariant } from "@/components/portal/button";
+import { FieldError, TextAreaField } from "@/components/portal/field";
 import { useAction } from "@/components/useAction";
-import { btn, inputCls } from "./kit";
 
-type Tone = keyof typeof btn;
+type Tone = "primary" | "dark" | "outline" | "ghost" | "danger";
+
+const variantFor: Record<Tone, ButtonVariant> = {
+  primary: "primary",
+  dark: "primary",
+  outline: "secondary",
+  ghost: "quiet",
+  danger: "danger",
+};
+
+function Result({ error, message }: { error: string | null; message: string | null }) {
+  return (
+    <>
+      <span role="status" aria-live="polite" className="text-label font-semibold text-success">
+        {message}
+      </span>
+      <span role="alert">
+        {error && <FieldError>Couldn’t save. {error}</FieldError>}
+      </span>
+    </>
+  );
+}
 
 /** One-click action; optional browser confirm for anything hard to undo. */
 export function ActionButton({
@@ -14,33 +34,36 @@ export function ActionButton({
   body,
   children,
   tone = "outline",
+  size = "md",
   confirm,
   success,
+  busyLabel,
 }: {
   url: string;
   body: unknown;
   children: ReactNode;
   tone?: Tone;
+  size?: "md" | "sm";
   confirm?: string;
   success?: string;
+  busyLabel?: string;
 }) {
   const { run, busy, error, message } = useAction();
   return (
-    <span className="inline-flex flex-col items-start gap-1">
-      <button
-        type="button"
-        className={btn[tone]}
-        disabled={busy}
+    <span className="inline-flex max-w-md flex-col items-start gap-1">
+      <Button
+        variant={variantFor[tone]}
+        size={size}
+        busy={busy}
+        busyLabel={busyLabel}
         onClick={() => {
           if (confirm && !window.confirm(confirm)) return;
           void run(url, body, { success });
         }}
       >
-        {busy && <Loader2 className="h-4 w-4 animate-spin" />}
         {children}
-      </button>
-      {error && <span role="alert" className="max-w-md text-xs font-bold text-signal-700">{error}</span>}
-      {message && <span role="status" className="text-xs font-bold text-emerald-700">{message}</span>}
+      </Button>
+      <Result error={error} message={message} />
     </span>
   );
 }
@@ -56,6 +79,7 @@ export function ReasonAction({
   optional = false,
   tone = "outline",
   submitTone = "primary",
+  size = "md",
   success,
   field = "reason",
 }: {
@@ -68,57 +92,60 @@ export function ReasonAction({
   optional?: boolean;
   tone?: Tone;
   submitTone?: Tone;
+  size?: "md" | "sm";
   success?: string;
   field?: string;
 }) {
   const { run, busy, error, message } = useAction();
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState("");
+  const [tried, setTried] = useState(false);
+  const invalid = !optional && reason.trim().length < 5;
+
   if (!open) {
     return (
       <span className="inline-flex flex-col items-start gap-1">
-        <button type="button" className={btn[tone]} onClick={() => setOpen(true)}>
+        <Button variant={variantFor[tone]} size={size} onClick={() => setOpen(true)}>
           {label}
-        </button>
-        {message && <span role="status" className="text-xs font-bold text-emerald-700">{message}</span>}
+        </Button>
+        <Result error={null} message={message} />
       </span>
     );
   }
   return (
     <form
-      className="w-full max-w-md space-y-2 rounded-xl border border-ink-200 bg-ink-50/60 p-3"
+      noValidate
+      className="w-full max-w-md space-y-3 rounded-card border border-line bg-subtle p-4"
       onSubmit={async (e) => {
         e.preventDefault();
+        setTried(true);
+        if (invalid) return;
         const ok = await run(url, { ...body, [field]: reason }, { success });
         if (ok) {
           setOpen(false);
           setReason("");
+          setTried(false);
         }
       }}
     >
-      <label className="block text-xs font-extrabold text-ink-700">
-        {reasonLabel}
-        {optional && <span className="font-normal text-ink-500"> (optional)</span>}
-        <textarea
-          rows={2}
-          value={reason}
-          required={!optional}
-          minLength={optional ? undefined : 5}
-          onChange={(e) => setReason(e.target.value)}
-          placeholder={placeholder}
-          className={`${inputCls} mt-1 py-2`}
-          autoFocus
-        />
-      </label>
-      {error && <Notice tone="error">{error}</Notice>}
-      <div className="flex gap-2">
-        <button type="submit" className={btn[submitTone]} disabled={busy}>
-          {busy && <Loader2 className="h-4 w-4 animate-spin" />}
+      <TextAreaField
+        label={reasonLabel}
+        optional={optional}
+        hint={placeholder}
+        rows={2}
+        value={reason}
+        onChange={(e) => setReason(e.target.value)}
+        error={tried && invalid ? "Give a reason of at least 5 characters." : null}
+        autoFocus
+      />
+      <Result error={error} message={null} />
+      <div className="flex flex-wrap gap-2">
+        <Button type="submit" variant={variantFor[submitTone]} busy={busy} busyLabel="Saving…">
           {submitLabel ?? label}
-        </button>
-        <button type="button" className={btn.ghost} onClick={() => setOpen(false)}>
+        </Button>
+        <Button variant="quiet" onClick={() => setOpen(false)}>
           Cancel
-        </button>
+        </Button>
       </div>
     </form>
   );

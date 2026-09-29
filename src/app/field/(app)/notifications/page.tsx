@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { NotificationList } from "@/components/Notifications";
-import { Overline } from "@/components/field/ui";
+import { PageHeading } from "@/components/portal/layout";
 import { requireRole } from "@/lib/auth/session";
 import { readStore } from "@/lib/we/store";
 
@@ -13,8 +13,7 @@ export default async function FieldNotificationsPage() {
   const items = store.notifications.filter((n) => n.userId === user.id).sort((a, b) => b.at.localeCompare(a.at)).slice(0, 50);
   return (
     <section>
-      <Overline>UPDATES</Overline>
-      <h1 className="mb-3 text-2xl font-extrabold tracking-tight">Updates from the office</h1>
+      <PageHeading eyebrow="Updates" title="Updates from the office" />
       <NotificationList items={items} portal="field" />
     </section>
   );
