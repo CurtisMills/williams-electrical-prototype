@@ -9,6 +9,23 @@
   --color-spark-300: #ffe066;
   --color-spark-400: #ffd21f;
   --color-spark-500: #f5bd00;
+
+  /* Field work (engineer + office): charcoal, white and red */
+  --color-ink-50: #f0f4f2;
+  --color-ink-100: #e6ebea;
+  --color-ink-200: #d6dddd;
+  --color-ink-400: #899596;
+  --color-ink-500: #697778;
+  --color-ink-600: #526566;
+  --color-ink-700: #425459;
+  --color-ink-800: #1f3035;
+  --color-ink-900: #1b2529;
+  --color-ink-950: #17252a;
+  --color-signal-400: #ef5558;
+  --color-signal-500: #e64b4c;
+  --color-signal-600: #cf343d;
+  --color-signal-700: #b62f36;
+  --color-signal-800: #982a31;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }

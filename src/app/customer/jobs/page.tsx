@@ -44,7 +44,7 @@ function JobGroup({
       ) : (
         <div className="space-y-3">
           {jobs.map((job) => (
-            <Link key={job.id} href={`/jobs/${job.id}`} className="block">
+            <Link key={job.id} href={`/customer/jobs/${job.id}`} className="block">
               <Card className="flex items-center gap-3">
                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
                   <ServiceIcon slug={job.serviceSlug} className="h-5 w-5" />

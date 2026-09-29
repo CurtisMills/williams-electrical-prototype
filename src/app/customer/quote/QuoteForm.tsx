@@ -99,12 +99,12 @@ export function QuoteForm({
           review the details and send your quote within 24 hours.
         </p>
         <Link
-          href={`/jobs/${created.id}`}
+          href={`/customer/jobs/${created.id}`}
           className="mt-8 w-full rounded-xl bg-brand-600 py-3.5 font-semibold text-white"
         >
           Track this request
         </Link>
-        <Link href="/" className="mt-3 w-full py-3 text-sm font-medium text-brand-600">
+        <Link href="/customer" className="mt-3 w-full py-3 text-sm font-medium text-brand-600">
           Back to home
         </Link>
       </div>

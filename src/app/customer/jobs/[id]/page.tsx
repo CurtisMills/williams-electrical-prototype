@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 
 const progressSteps = ["Requested", "Quoted", "Booked", "On site", "Done"];
 
-export default async function JobDetailPage(props: PageProps<"/jobs/[id]">) {
+export default async function JobDetailPage(props: PageProps<"/customer/jobs/[id]">) {
   const { id } = await props.params;
   const job = await getJob(id);
   if (!job) notFound();
@@ -18,7 +18,7 @@ export default async function JobDetailPage(props: PageProps<"/jobs/[id]">) {
 
   return (
     <div>
-      <PageHeader title={job.title} subtitle={`Ref ${job.reference}`} backHref="/jobs" />
+      <PageHeader title={job.title} subtitle={`Ref ${job.reference}`} backHref="/customer/jobs" />
 
       <div className="space-y-5 p-5">
         <Card>

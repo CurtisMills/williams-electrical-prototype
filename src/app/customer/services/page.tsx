@@ -47,7 +47,7 @@ export default async function ServicesPage() {
                           <Clock className="h-3.5 w-3.5" /> {s.duration}
                         </span>
                         <Link
-                          href={`/quote?service=${s.slug}`}
+                          href={`/customer/quote?service=${s.slug}`}
                           className="rounded-full bg-brand-600 px-3.5 py-1.5 text-xs font-semibold text-white"
                         >
                           {category === "emergency" ? "Request now" : "Get quote"}

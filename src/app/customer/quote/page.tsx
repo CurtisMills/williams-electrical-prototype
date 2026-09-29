@@ -2,7 +2,7 @@ import { PageHeader } from "@/components/ui";
 import { getCustomer, listServices } from "@/lib/db";
 import { QuoteForm } from "./QuoteForm";
 
-export default async function QuotePage(props: PageProps<"/quote">) {
+export default async function QuotePage(props: PageProps<"/customer/quote">) {
   const { service } = await props.searchParams;
   const [services, customer] = await Promise.all([listServices(), getCustomer()]);
 
