@@ -1,36 +1,57 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Williams Electrical – Mobile Web App Prototype
 
-## Getting Started
+A lightweight, mobile-first, full-stack TypeScript prototype showing what a customer-facing app for **Williams Electrical** could look like. It's intended as a clickable wireframe for scoping conversations, not production code.
 
-First, run the development server:
+## Stack
+
+- **Next.js 16 (App Router)** – React front end and TypeScript API in one project
+- **TypeScript** throughout, with shared types in `src/lib/types.ts`
+- **Tailwind CSS v4** for styling, **lucide-react** for icons
+- **In-memory data store** (`src/lib/db.ts`) seeded with demo data. It resets when the server restarts.
+
+## Getting started
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000. On a desktop browser the app renders inside a phone frame. On a phone it fills the screen, so you can open it via your machine's LAN IP to demo on a real device.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## What's in the prototype
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Screen | Route | Purpose |
+| --- | --- | --- |
+| Home | `/` | Emergency call CTA, quick actions, upcoming visit, popular services |
+| Services | `/services` | Service catalogue with "from" pricing, grouped by home, business and emergency |
+| Request a quote | `/quote` | 3-step form (job, location, contact) that posts to the API |
+| My jobs | `/jobs` | Active and completed jobs with live status |
+| Job detail | `/jobs/[id]` | Progress tracker, engineer contact, documents, activity timeline |
+| Account | `/account` | Profile, saved properties, settings placeholders |
 
-## Learn More
+## API
 
-To learn more about Next.js, take a look at the following resources:
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| GET | `/api/services` | List services |
+| GET | `/api/jobs` | List the customer's jobs |
+| GET | `/api/jobs/:id` | Job detail |
+| POST | `/api/quotes` | Create a quote request (validated server-side, returns the new job) |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Project layout
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+src/
+  app/            # Pages (server components) and API route handlers
+  components/     # Shared UI (bottom nav, cards, badges, icons)
+  lib/            # Types, data layer, formatting helpers
+```
 
-## Deploy on Vercel
+## Possible next steps for the full build
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Real database (Postgres + Prisma/Drizzle) behind the existing `src/lib/db.ts` functions
+- Authentication (magic link / SMS OTP) and per-customer data
+- Engineer/admin views: job scheduling, quoting, certificate upload
+- Online payments (Stripe), quote acceptance and booking slots
+- Push/SMS notifications for job updates, PWA install support
+- Photo uploads for quote requests
