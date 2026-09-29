@@ -1,45 +1,96 @@
 import type { Metadata } from "next";
-import { Clock3 } from "lucide-react";
-import { FieldSectionHeading, Overline } from "@/components/field/ui";
 import { requireRole } from "@/lib/auth/session";
-import { formatDayKey, plural, ukHour } from "@/lib/field/dates";
-import { getEngineerDay } from "@/lib/field/store";
-import { TodayBoard } from "./TodayBoard";
+import { dateKeyOf, formatClock, formatDayKey, ukHour } from "@/lib/field/dates";
+import { breakMinutes, netMinutes } from "@/lib/we/calc";
+import { readStore } from "@/lib/we/store";
+import { lookup, employeeDay, selectableJobs } from "@/lib/we/views";
+import { activityLabel } from "@/lib/we/work";
+import type { WeStore, WorkSession } from "@/lib/we/types";
+import { TodayScreen, type TodayData } from "./TodayScreen";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Today" };
 
+function labelFor(store: WeStore, s: Pick<WorkSession, "jobId" | "activity" | "note">) {
+  const job = lookup(store).job(s.jobId);
+  if (job) return { title: `${job.ref} · ${job.title}`, site: lookup(store).site(job.siteId)?.name ?? "" };
+  return { title: activityLabel[s.activity], site: s.note };
+}
+
 export default async function EngineerTodayPage() {
   const { user } = await requireRole("engineer");
-  const { date, jobs, logs, activeLog } = await getEngineerDay(user.id);
+  const store = await readStore();
+  const day = employeeDay(store, user.id);
   const hour = ukHour();
   const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
-  const finished = logs.filter((l) => l.finishedAt).length;
 
-  return (
-    <section aria-labelledby="today-heading">
-      <div className="mb-6">
-        <Overline>{formatDayKey(date, "full").toUpperCase()}</Overline>
-        <h1 id="today-heading" className="text-2xl leading-tight font-extrabold tracking-tight">
-          {greeting}, {user.name.split(" ")[0]}
-        </h1>
-      </div>
+  const open = day.open;
+  const openBreak = open?.breaks.find((b) => !b.end) ?? null;
+  const data: TodayData = {
+    firstName: user.name.split(" ")[0],
+    greeting,
+    dateLabel: formatDayKey(day.today, "full"),
+    today: day.today,
+    open: open
+      ? {
+          id: open.id,
+          jobId: open.jobId,
+          activity: open.activity,
+          ...labelFor(store, open),
+          startedAt: open.startedAt,
+          breakStartedAt: openBreak?.start ?? null,
+          completedBreakMinutes: open.breaks.filter((b) => b.end).reduce((n, b) => n + (Date.parse(b.end!) - Date.parse(b.start)) / 60000, 0),
+          isOld: day.openIsOld,
+          startDate: dateKeyOf(open.startedAt),
+          startDateLabel: formatDayKey(dateKeyOf(open.startedAt), "long"),
+          startTime: formatClock(open.startedAt),
+          note: open.note,
+        }
+      : null,
+    planned: day.planned.map((p) => ({
+      key: p.assignment.id,
+      jobId: p.job.id,
+      ref: p.job.ref,
+      title: p.job.title,
+      customer: p.customerName,
+      site: p.site.name,
+      address: p.site.address,
+      access: p.site.access,
+      start: p.assignment.start,
+      end: p.assignment.end,
+      recorded: p.sessions.map((s) => `${formatClock(s.startedAt)}–${s.finishedAt ? formatClock(s.finishedAt) : "now"}`),
+    })),
+    absencesToday: day.absencesToday.map((a) => a.label),
+    sessions: day.todaysSessions.map((s) => ({
+      id: s.id,
+      ...labelFor(store, s),
+      start: formatClock(s.startedAt),
+      finish: s.finishedAt ? formatClock(s.finishedAt) : null,
+      breakMinutes: breakMinutes(s),
+      netMinutes: netMinutes(s),
+    })),
+    upcoming: day.upcoming.map((d) => ({
+      date: d.date,
+      label: formatDayKey(d.date, "weekday"),
+      short: formatDayKey(d.date, "dm"),
+      working: d.working,
+      holiday: d.holiday,
+      absences: d.absences.map((a) => a.label),
+      items: d.items.map((p) => ({
+        key: p.assignment.id,
+        ref: p.job.ref,
+        title: p.job.title,
+        customer: p.customerName,
+        site: p.site.name,
+        address: p.site.address,
+        access: p.site.access,
+        start: p.assignment.start,
+        end: p.assignment.end,
+      })),
+    })),
+    jobs: selectableJobs(store),
+    pendingCorrections: day.pendingCorrections.length,
+  };
 
-      <div className="mb-7 flex items-center gap-3 rounded-xl border border-ink-200 bg-white p-3.5">
-        <span className="grid h-9 w-9 place-items-center rounded-lg bg-[#dce8e2] text-[#245641]">
-          <Clock3 className="h-5 w-5" />
-        </span>
-        <span>
-          <strong className="block text-sm">Your day</strong>
-          <small className="block text-sm text-ink-500">
-            {plural(jobs.length, "job")} · {finished} finished
-            {activeLog ? " · 1 in progress" : ""}
-          </small>
-        </span>
-      </div>
-
-      <FieldSectionHeading title="Today’s jobs" aside={formatDayKey(date, "weekday")} />
-      <TodayBoard jobs={jobs} logs={logs} activeLog={activeLog} />
-    </section>
-  );
+  return <TodayScreen data={data} />;
 }

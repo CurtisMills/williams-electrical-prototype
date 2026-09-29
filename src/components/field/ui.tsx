@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { HolidayStatus } from "@/lib/field/types";
+import type { LeaveStatus, TimesheetStatus } from "@/lib/we/types";
 
 export function FieldBrand({
   size = "md",
@@ -88,16 +88,65 @@ export function FieldSectionHeading({ title, aside }: { title: string; aside?: R
   );
 }
 
-const statusStyles: Record<HolidayStatus, string> = {
-  pending: "bg-amber-50 text-amber-800",
-  approved: "bg-emerald-50 text-emerald-800",
-  declined: "bg-signal-600/10 text-signal-700",
+export type PillTone = "amber" | "green" | "red" | "grey" | "dark" | "blue" | "violet";
+
+const toneStyles: Record<PillTone, string> = {
+  amber: "bg-amber-50 text-amber-900 ring-amber-300",
+  green: "bg-emerald-50 text-emerald-800 ring-emerald-200",
+  red: "bg-signal-600/10 text-signal-800 ring-signal-600/30",
+  grey: "bg-ink-50 text-ink-600 ring-ink-200",
+  dark: "bg-ink-800 text-white ring-ink-800",
+  blue: "bg-sky-50 text-sky-800 ring-sky-200",
+  violet: "bg-violet-50 text-violet-800 ring-violet-200",
 };
 
-export function HolidayStatusPill({ status }: { status: HolidayStatus }) {
+/** Status is always spelled out, so it reads the same without colour. */
+export function Pill({ tone, children }: { tone: PillTone; children: ReactNode }) {
   return (
-    <span className={`rounded-md px-2 py-1.5 text-xs font-extrabold whitespace-nowrap ${statusStyles[status]}`}>
-      {status[0].toUpperCase() + status.slice(1)}
+    <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-extrabold whitespace-nowrap ring-1 ring-inset ${toneStyles[tone]}`}>
+      {children}
+    </span>
+  );
+}
+
+const leaveTone: Record<LeaveStatus, PillTone> = {
+  pending: "amber",
+  approved: "green",
+  declined: "red",
+  withdrawn: "grey",
+  cancelled: "grey",
+};
+
+export function LeaveStatusPill({ status, cancelling = false }: { status: LeaveStatus; cancelling?: boolean }) {
+  return (
+    <span className="inline-flex flex-wrap justify-end gap-1">
+      <Pill tone={leaveTone[status]}>{status[0].toUpperCase() + status.slice(1)}</Pill>
+      {cancelling && <Pill tone="amber">Cancellation requested</Pill>}
+    </span>
+  );
+}
+
+const sheetTone: Record<TimesheetStatus, PillTone> = {
+  draft: "grey",
+  submitted: "blue",
+  changes_requested: "amber",
+  approved: "green",
+};
+const sheetLabel: Record<TimesheetStatus, string> = {
+  draft: "Draft",
+  submitted: "Submitted",
+  changes_requested: "Changes requested",
+  approved: "Approved",
+};
+
+export function TimesheetPill({ status }: { status: TimesheetStatus }) {
+  return <Pill tone={sheetTone[status]}>{sheetLabel[status]}</Pill>;
+}
+
+export function DemoBadge() {
+  return (
+    <span className="rounded border border-dashed border-current px-1.5 py-0.5 text-[10px] font-extrabold tracking-[0.12em] uppercase opacity-80">
+      Demo data
     </span>
   );
 }

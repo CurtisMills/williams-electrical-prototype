@@ -1,13 +1,14 @@
 # Williams Electrical – Staff App Prototype
 
-A mobile-first, full-stack TypeScript prototype for **Williams Electrical**: a field app for engineers and an office portal, both behind a sign-in. It is a working prototype for discussion, not production code.
+A working demonstration for **Williams Electrical**: a mobile-first app for employees and an office portal for planners and administrators. It covers the working day, annual leave, attendance, six-week planning, timesheets and exports. Every screen runs on **sample demo data**, which is labelled as such throughout. This is a prototype for discussion, not production code.
 
 ## Stack
 
 - **Next.js 16 (App Router)**: React front end and TypeScript API routes in one project
 - **Tailwind CSS v4**, **lucide-react** icons
-- **Sign-in:** signed, httpOnly session cookies (HMAC-SHA256), one per portal, checked by `src/proxy.ts` and again in every page and API route
-- **Storage:** JSON file on the server (`.data/field-store.json`, gitignored) for time logs and holiday requests
+- **Sign-in:** signed, httpOnly session cookies (HMAC-SHA256), one per portal. `src/proxy.ts` checks them, and every page and API route checks the role again on the server.
+- **Storage:** a JSON file on the server (`.data/we-store.json`, gitignored). Writes are serialised and use version checks; each change writes an audit entry and, where relevant, a notification.
+- **Time zone:** everything is calculated in Europe/London, including across clock changes. A session that runs past midnight is split between the two days.
 
 ## Getting started
 
@@ -16,75 +17,116 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:3000. The root URL sends phones to the field sign-in and desktops to the office sign-in (or straight into the app if already signed in).
+Open http://localhost:3000. The root URL sends phones to the employee sign-in and desktops to the office sign-in.
 
-| Route | For | Notes |
+### Demo accounts
+
+Every account uses the password **`Williams2026!`** (override with `DEMO_PASSWORD`).
+
+| Portal | Person | Email |
 | --- | --- | --- |
-| `/field/login` | Engineers (mobile-first) | Also works on desktop |
-| `/field` | Today's jobs, start/finish job | Bottom tabs on phones, header tabs on desktop |
-| `/field/holiday` | Request holiday, see status | |
-| `/office/login` | Office staff (desktop-first) | Also works on phones |
-| `/office` | Holiday requests, approve/decline, availability by date | Sidebar on desktop, top tabs on phones |
-| `/office/team` | Each engineer's jobs today with recorded start/finish times | |
+| Employee | Jordan Price, electrician | `jordan.price@williamselectrical.co.uk` |
+| Employee | Rhys Davies, electrician (has an unfinished session from an earlier day) | `rhys.davies@williamselectrical.co.uk` |
+| Employee | Also `sam.morgan@`, `cerys.thomas@`, `owen.hughes@` (electricians), `alex.evans@`, `pat.green@`, `lowri.jenkins@` (apprentices) | `…@williamselectrical.co.uk` |
+| Office | Megan Lloyd, office administrator | `megan.lloyd@williamselectrical.co.uk` |
+| Office | Gareth Williams, director and planner | `gareth.williams@williamselectrical.co.uk` |
 
-Both portals can be signed in at the same time in one browser. Sign out is in the account menu (field) or the sidebar (office).
+Once signed in, the **Demo** menu in the header or sidebar lets you **view the app as** any other person (employee or office) without signing out. It also has **Reset demo data**, which restores the seeded scenario and clears any taps still waiting on the phone.
 
-### Demo accounts (sample)
+## Screens
 
-All demo accounts use the password **`Williams2026!`** (override with `DEMO_PASSWORD`).
+| Route | Who | What it does |
+| --- | --- | --- |
+| `/field` | Employee | Today's jobs with address, maps link and access notes. **Start work** in one tap. A banner shows the active job with Break/Resume, Change job and a confirmed Finish. Start other work (another job, travel, or "can't find the job" with a note). If a session is still open from an earlier day, the employee is asked for the finish time first. Also shows what's been recorded today and the next seven days. |
+| `/field/leave` | Employee | Allowance left, approved and pending. Request full or half days, with a live preview of the allowance (blocked if it would go over). Confirmation with a reference. Withdraw a pending request or ask to cancel approved leave. History. |
+| `/field/hours` | Employee | Week-by-week recorded hours, **Fix** on any session, a form for forgotten entries, and change requests with their status. **Submit this week** as a timesheet. |
+| `/field/notifications` | Employee | Decisions on leave, corrections and timesheets, and new assignments. |
+| `/office` | Office | Team status today: working, on a break, recorded finished, on leave, and **No start recorded**, shown as an information gap rather than an absence. Planned versus recorded, first start, hours worked, last update received. A "Needs attention" list. Refreshes every 20 seconds. |
+| `/office/exceptions` | Office | Missing finishes, no start recorded, correction requests (original and proposed values side by side, approve or reject inline), work without a job, unusually long sessions, conflicting phone taps, needs-replacement slots and timesheets to review. The warning thresholds are editable here. |
+| `/office/history` | Office | Search records by person, job, customer, date and status. Add a record on someone's behalf. |
+| `/office/records/[id]` | Office | Record detail: original values, the phone taps received, a correction form (reason required), remove/restore, and the full audit trail. |
+| `/office/leave`, `/office/leave/[id]` | Office | Requests waiting, cancellation requests, booked leave and history. The detail page shows the allowance, staffing impact by day (which planned work becomes unfilled and who could cover), and who else is off. Approve (with a warning if places would be unfilled) or decline. The office can also record leave directly. |
+| `/office/planning` | Office | Six-week plan in daily or weekly view: a person-by-day grid with job chips, absences and free hours. Unfilled places and needs-replacement flags. The preview toggle adds pending leave and tentative jobs with dashed outlines, kept separate from the confirmed plan. |
+| `/office/planning/jobs/[id]` | Office | Staffing by day for one job: requirements by role, assign people (single day or across a date range, listing the days skipped), and "Why not others?" explaining each blocked candidate (on leave, wrong role, already booked, not a working day). |
+| `/office/jobs` | Office | Jobs, customers and sites. Create jobs and sites, and change job status (reopening needs a reason). |
+| `/office/timesheets`, `/office/timesheets/[employeeId]` | Office | Weekly timesheets by employee or by customer and job, with filters and a comparison with the previous week. Approve or request changes. A later correction reopens an approved week automatically. |
+| `/office/exports` | Office | Employee CSV, customer CSV and a printable customer summary. Final exports use approved timesheets only; a draft preview includes unapproved ones. Every export is logged and marked **Superseded** if a later correction changes an approved week. |
+| `/office/notifications` | Office | New requests, submissions and phone conflicts. |
 
-| Portal | Email |
-| --- | --- |
-| Field | `jordan.price@williamselectrical.co.uk` (also `sam.morgan@…`, `rhys.davies@…`, `cerys.thomas@…`, `owen.hughes@…`, `lowri.jenkins@…`, `alex.evans@…`, `pat.green@…`) |
-| Office | `megan.lloyd@williamselectrical.co.uk`, `gareth.williams@williamselectrical.co.uk` |
+Both portals can be signed in at the same time in one browser. Employees can't open the office portal and vice versa.
 
-Engineer accounts can't sign in to the office portal and vice versa.
+## Defaults used where company policy wasn't specified
 
-## Rules enforced on the server
+These are sensible defaults for the demo. Confirm each one before real use.
 
-- Only one active job per engineer; a job can be started once and finished once (double taps are rejected).
-- Holiday: first day today or later, last day on or after the first, at least one working day, up to 15 working days, no overlap with the engineer's own pending or approved requests. Weekends are excluded; bank holidays are not.
-- Only office users can approve or decline, and only pending requests.
-- Engineers only ever see their own holiday requests and jobs.
+- **Leave year:** January to December. The allowance is 25 days (Owen Hughes 20, as he works Monday to Thursday). Bank holidays are extra and never taken from the allowance.
+- **Bank holidays:** England and Wales, 2026–2027 (`src/lib/we/seed.ts`).
+- **Half days:** morning 08:00–12:00 and afternoon 12:00–16:00. A full working day is 08:00–16:00.
+- **Timesheet week:** Monday to Sunday.
+- **Long session warning:** over 11 hours. **No start recorded:** 30 minutes after the planned start with nothing received. Both can be changed on the Exceptions page.
+- **Role matching is strict:** an apprentice can't fill an electrician place and vice versa.
+- **A break entered by hand** in a correction is placed in the middle of the session.
+- **A forgotten finish from an earlier day**, entered by the employee, applies straight away so they can start today. It still goes to the office to confirm, and the office can edit or reject it.
+- **Duplicates:** starting while already working is rejected, and each phone tap carries a unique ID so a retried tap is never counted twice.
+
+## Working offline
+
+Taps on the employee app are saved on the phone with the time they happened, and sent in order when the signal returns. The screen shows the queued taps straight away with a "waiting to send" banner. The office sees the record once it arrives. The recorded time is when the employee tapped, not when it synced, and "Last update received" shows the gap. If a queued tap conflicts with something the office changed in the meantime, it is kept and flagged on the Exceptions page rather than silently dropped. A service worker keeps the `/field` pages available without a connection.
+
+## Eight-step demo script
+
+1. Sign in as **Jordan** on a phone and tap **Start work**. Sign in as **Megan** on a desktop: Jordan shows as Working on Office Today.
+2. Jordan taps **Change job**, then **Finish**. Both sessions appear under My hours and in Work history.
+3. Jordan requests leave on a future day with planned work. Megan sees it on Leave with the staffing impact.
+4. Megan approves despite the warning. The job's slot now shows as unfilled on Planning and Exceptions.
+5. On the job's planning page, Megan assigns a replacement. The shortage clears and the replacement gets a notification.
+6. Megan corrects **Rhys's** missing finish from an earlier day, giving a reason. The audit trail records it and his totals update.
+7. Jordan submits the week under My hours. Megan approves it on Timesheets.
+8. Megan downloads the employee and customer CSVs and opens the printable customer summary on Exports.
+
+To check the same scenario automatically against a temporary copy of the data:
+
+```bash
+npm run demo:check
+```
+
+It runs all eight steps plus a check that a correction to an approved week reopens it and supersedes its export.
+
+## Configuration
+
+| Variable | Default | Effect |
+| --- | --- | --- |
+| `DEMO_PASSWORD` | `Williams2026!` | Password for every demo account |
+| `DEMO_MODE` | on | Set to `off` to hide the view-as switch, the reset and the demo labels |
+| `SESSION_SECRET` | dev value | Set for anything beyond local use |
+| `FIELD_DATA_DIR` | `.data` | Where the JSON store is written |
+
+To reset the data, use **Reset demo data** in the Demo menu, or stop the server and delete `.data/we-store.json`.
 
 ## What is still sample data
 
-- The staff directory and shared demo password (`src/lib/auth/users.ts`).
-- Engineers' daily jobs: `getAssignedJobs(engineerId, date)` in `src/lib/field/sample-data.ts` is the JobLogic seam. It returns `AssignedJob[]`, and an integration only needs to replace that function.
-- Seeded holiday requests and the 25-day annual allowance.
-- To reset field data, stop the server and delete `.data/field-store.json`, or `POST /api/field/reset` while signed in to the office.
-- Set `SESSION_SECRET` for anything beyond local use. The file store needs a writable disk, so it won't persist on serverless hosting as-is.
-
-## API
-
-| Method | Endpoint | Access |
-| --- | --- | --- |
-| POST | `/api/auth/login` `{ email, password, portal: "field" \| "office" }` | Public |
-| POST | `/api/auth/logout` (form field `portal`) | Public |
-| GET | `/api/field/today` | Engineer |
-| POST | `/api/field/jobs/:id/start`, `/api/field/jobs/:id/finish` | Engineer |
-| GET | `/api/field/holidays` (`?status=`) | Engineer (own) / Office (all) |
-| POST | `/api/field/holidays` `{ firstDay, lastDay, note? }` | Engineer |
-| PATCH | `/api/field/holidays/:id` `{ status: "approved" \| "declined" }` | Office |
-| POST | `/api/field/reset` | Office |
+- The staff directory and shared password (`src/lib/auth/users.ts`, `src/lib/we/seed.ts`).
+- Customers, sites, jobs, assignments, leave and recorded sessions, all seeded relative to today in `src/lib/we/seed.ts`. A job system integration would replace the jobs and assignments.
+- The file store needs a writable disk, so it won't persist on serverless hosting as it stands.
 
 ## Customer portal wireframe
 
-The earlier customer-facing wireframe (quotes, services, job tracking) is kept at `/customer`. It is not linked from the staff app and is not behind sign-in.
+The earlier customer-facing wireframe (quotes, services, job tracking) is kept at `/customer`. It isn't linked from the staff app and isn't behind sign-in.
 
 ## Project layout
 
 ```
 src/
-  proxy.ts            # Route gating for /field and /office
+  proxy.ts              # Route gating for /field and /office
   app/
-    page.tsx          # Root redirect (device + session aware)
-    field/            # login/ and (app)/ Today + Holiday
-    office/           # login/ and (app)/ Overview + Team
-    customer/         # Customer wireframe
-    api/              # auth/, field/, and customer endpoints
-  components/         # auth/, field/, office/ UI
+    field/              # Employee: login/ and (app)/ Today, leave, hours, notifications
+    office/             # Office: login/, (app)/ screens, print/ customer summary
+    api/                # auth/, field/, office/, demo/, notifications
+  components/           # Shared, field/ and office/ UI, offline queue, demo menu
   lib/
-    auth/             # Session token, staff directory, session helpers
-    field/            # Types, dates, sample data, file store
+    auth/               # Session token, staff directory, session helpers
+    we/                 # Types, store, calculations, seed, and domain actions
+                        # (work, leave, planning, timesheets, exports, views, admin)
+scripts/demo-check.ts   # Automated eight-step demo run
+public/sw.js            # Service worker for offline employee pages
 ```
