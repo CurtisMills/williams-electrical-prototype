@@ -1,22 +1,18 @@
 import Link from "next/link";
-import { ChevronLeft, Zap } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import type { ReactNode } from "react";
 import { statusMeta } from "@/lib/format";
 import type { JobStatus } from "@/lib/types";
 
 export function Logo({ light = false }: { light?: boolean }) {
   return (
-    <div className="flex items-center gap-2">
-      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-spark-400 text-brand-900">
-        <Zap className="h-5 w-5" fill="currentColor" />
-      </span>
-      <div className="leading-tight">
-        <p className={`text-sm font-bold ${light ? "text-white" : "text-brand-900"}`}>Williams</p>
-        <p className={`text-[11px] tracking-widest uppercase ${light ? "text-brand-100" : "text-slate-500"}`}>
-          Electrical
-        </p>
-      </div>
-    </div>
+    <img
+      src={light ? "/logo-light.png" : "/logo.png"}
+      alt="Williams Electrical (Cymru) Ltd"
+      width={999}
+      height={431}
+      className="block h-20 w-auto max-w-full"
+    />
   );
 }
 

@@ -1,29 +1,24 @@
 import type { ReactNode } from "react";
 import type { HolidayStatus } from "@/lib/field/types";
 
-export function FieldBrand({ size = "md", tone = "light" }: { size?: "md" | "lg"; tone?: "light" | "dark" }) {
-  const lg = size === "lg";
+export function FieldBrand({
+  size = "md",
+  tone = "light",
+  className,
+}: {
+  size?: "md" | "lg";
+  tone?: "light" | "dark";
+  className?: string;
+}) {
+  const sizeClass = size === "lg" ? "h-24 w-auto self-center sm:h-32" : "h-20 w-auto self-center";
   return (
-    <div className={`flex items-center leading-none ${lg ? "gap-3.5" : "gap-2.5"}`}>
-      <span
-        aria-hidden
-        className={`grid -skew-x-6 place-items-center border-2 border-signal-500 font-extrabold text-signal-400 ${
-          lg ? "h-12 w-12 text-2xl" : "h-8 w-8 text-lg"
-        }`}
-      >
-        W
-      </span>
-      <span className={tone === "light" ? "text-white" : "text-ink-950"}>
-        <strong className={`block font-extrabold tracking-[0.14em] ${lg ? "text-xl" : "text-sm"}`}>WILLIAMS</strong>
-        <small
-          className={`block font-semibold tracking-[0.34em] ${lg ? "mt-1.5 text-[11px]" : "mt-1 text-[9px]"} ${
-            tone === "light" ? "text-ink-200" : "text-ink-500"
-          }`}
-        >
-          ELECTRICAL
-        </small>
-      </span>
-    </div>
+    <img
+      src={tone === "light" ? "/logo-light.png" : "/logo.png"}
+      alt="Williams Electrical (Cymru) Ltd"
+      width={999}
+      height={431}
+      className={`block max-w-full ${className ?? sizeClass}`}
+    />
   );
 }
 
